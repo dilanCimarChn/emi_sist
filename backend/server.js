@@ -1,30 +1,78 @@
-require('dotenv').config();
 const express = require('express');
 const cors = require('cors');
-const { Pool } = require('pg');
+const helmet = require('helmet');
+const rateLimit = require('express-rate-limit');
+const pool = require('./db');
+const authRoutes = require('./routes/authRoutes');
 
 const app = express();
 const port = process.env.PORT || 5000;
 
-// Middleware
-app.use(cors());
-app.use(express.json());
+// Configuración de seguridad
+app.use(helmet()); // Configura cabeceras HTTP seguras
 
-// Configurar la conexión con PostgreSQL
-const pool = new Pool({
-    user: process.env.DB_USER,
-    host: process.env.DB_HOST,
-    database: process.env.DB_NAME,
-    password: process.env.DB_PASSWORD,
-    port: process.env.DB_PORT
+// Limitador de solicitudes para prevenir ataques de fuerza bruta
+const limiter = rateLimit({
+    windowMs: 15 * 60 * 1000, // 15 minutos
+    max: 100 // Máximo 100 solicitudes por IP
 });
+app.use(limiter);
+
+// Configuración de CORS más restrictiva
+app.use(cors({
+    origin: 'http://localhost:5173', 
+    methods: ['GET', 'POST', 'PUT', 'DELETE'],
+    allowedHeaders: ['Content-Type', 'Authorization'],
+    credentials: true,
+    maxAge: 3600
+}));
+
+app.use(express.json({ 
+    limit: '10kb' // Limitar tamaño de solicitudes JSON
+}));
 
 // Ruta de prueba
 app.get('/', (req, res) => {
-    res.send('¡Backend funcionando correctamente!');
+    res.status(200).json({ 
+        message: 'Backend funcionando correctamente',
+        timestamp: new Date().toISOString()
+    });
 });
 
-// Iniciar el servidor
+// Rutas de autenticación
+app.use('/api/auth', authRoutes);
+
+// Manejador de errores global
+app.use((err, req, res, next) => {
+    console.error(err.stack);
+    
+    res.status(err.status || 500).json({
+        message: err.message || 'Error interno del servidor',
+        error: process.env.NODE_ENV === 'development' ? err : null,
+        timestamp: new Date().toISOString()
+    });
+});
+
+// Manejar rutas no encontradas
+app.use((req, res, next) => {
+    res.status(404).json({
+        message: 'Ruta no encontrada',
+        timestamp: new Date().toISOString()
+    });
+});
+
 app.listen(port, () => {
     console.log(`Servidor corriendo en http://localhost:${port}`);
+});
+
+// Manejo de cierre de servidor y conexión de base de datos
+process.on('SIGINT', async () => {
+    try {
+        await pool.end();
+        console.log('Conexión de base de datos cerrada');
+        process.exit(0);
+    } catch (error) {
+        console.error('Error cerrando la conexión de base de datos:', error);
+        process.exit(1);
+    }
 });

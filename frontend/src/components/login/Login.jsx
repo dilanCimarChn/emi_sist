@@ -2,13 +2,15 @@ import React, { useState } from 'react';
 import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
 import './login.css';
+import RegistroModal from '../registro/RegistroModal';
 
-const Login = ({ actualizarRol }) => {  // Añadir actualizarRol aquí
+const Login = ({ actualizarRol }) => {
     const [correo, setCorreo] = useState('');
     const [contrasena, setContrasena] = useState('');
     const [verContrasena, setVerContrasena] = useState(false);
     const [error, setError] = useState('');
     const [loading, setLoading] = useState(false);
+    const [showRegistroModal, setShowRegistroModal] = useState(false);
     const navigate = useNavigate();
 
     const handleLogin = async (e) => {
@@ -45,7 +47,7 @@ const Login = ({ actualizarRol }) => {  // Añadir actualizarRol aquí
                     localStorage.setItem('rol', res.data.rol);
                     axios.defaults.headers.common['Authorization'] = `Bearer ${res.data.token}`;
 
-                    actualizarRol(res.data.rol); // Actualizar rol aquí correctamente
+                    actualizarRol(res.data.rol);
 
                     switch (res.data.rol) {
                         case 'admin':
@@ -61,8 +63,11 @@ const Login = ({ actualizarRol }) => {  // Añadir actualizarRol aquí
                 case 401:
                     setError('Credenciales incorrectas');
                     break;
+                case 403:
+                    setError(res.data.message || 'Tu solicitud está pendiente de aprobación');
+                    break;
                 case 404:
-                    setError('Usuario no encontrado');
+                    setError('Usuario no registrado. ¿Deseas solicitar acceso?');
                     break;
                 default:
                     setError(res.data.message || 'Error en el inicio de sesión');
@@ -120,8 +125,22 @@ const Login = ({ actualizarRol }) => {  // Añadir actualizarRol aquí
                     >
                         {loading ? 'Iniciando sesión...' : 'Ingresar'}
                     </button>
+                    
+                    <div className="register-prompt">
+                        <p>¿No tienes una cuenta? 
+                            <button 
+                                type="button" 
+                                className="register-link"
+                                onClick={() => setShowRegistroModal(true)}
+                            >
+                                Solicitar acceso
+                            </button>
+                        </p>
+                    </div>
                 </form>
             </div>
+            
+            {showRegistroModal && <RegistroModal onClose={() => setShowRegistroModal(false)} />}
         </div>
     );
 };

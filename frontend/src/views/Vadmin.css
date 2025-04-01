@@ -1,0 +1,91 @@
+.admin-container {
+    min-height: 100vh;
+    background-color: #f3f4f6;
+    padding: 20px;
+}
+
+.admin-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 20px 25px;
+    margin-bottom: 30px;
+    background-color: white;
+    border-radius: 10px;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+    border-bottom: 2px solid #e5e7eb;
+}
+
+.admin-header h1 {
+    margin: 0;
+    font-size: 24px;
+    color: #111827;
+    font-weight: 600;
+}
+
+.admin-actions {
+    display: flex;
+    align-items: center;
+    gap: 20px;
+}
+
+.logout-button {
+    background-color: #f3f4f6;
+    border: 1px solid #d1d5db;
+    color: #374151;
+    padding: 10px 16px;
+    border-radius: 6px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.logout-button:hover {
+    background-color: #e5e7eb;
+    transform: translateY(-2px);
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+}
+
+.logout-button:active {
+    transform: translateY(0);
+    box-shadow: none;
+}
+
+.admin-content {
+    background-color: white;
+    padding: 30px;
+    border-radius: 10px;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+    margin-bottom: 20px;
+}
+
+.admin-content p {
+    margin: 0 0 16px 0;
+    color: #4b5563;
+    line-height: 1.6;
+}
+
+.admin-content p:last-child {
+    margin-bottom: 0;
+}
+
+/* Agregamos un diseño para tablets/móviles */
+@media (max-width: 768px) {
+    .admin-header {
+        flex-direction: column;
+        gap: 15px;
+        padding: 15px;
+    }
+    
+    .admin-actions {
+        width: 100%;
+        justify-content: space-between;
+    }
+    
+    .admin-content {
+        padding: 20px;
+    }
+}

@@ -4,6 +4,7 @@ const helmet = require('helmet');
 const rateLimit = require('express-rate-limit');
 const pool = require('./db');
 const authRoutes = require('./routes/authRoutes');
+const adminRoutes = require('./routes/adminRoutes');
 
 const app = express();
 const port = process.env.PORT || 5000;
@@ -41,6 +42,9 @@ app.get('/', (req, res) => {
 
 // Rutas de autenticación
 app.use('/api/auth', authRoutes);
+
+// Rutas de administración
+app.use('/api/admin', adminRoutes);
 
 // Manejador de errores global
 app.use((err, req, res, next) => {

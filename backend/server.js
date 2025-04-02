@@ -9,6 +9,15 @@ const adminRoutes = require('./routes/adminRoutes');
 const app = express();
 const port = process.env.PORT || 5000;
 
+const path = require('path');
+app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
+
+const fs = require('fs');
+const uploadDir = path.join(__dirname, 'uploads/fotosDocentes');
+if (!fs.existsSync(uploadDir)) {
+  fs.mkdirSync(uploadDir, { recursive: true });
+}
+
 // Configuración de seguridad
 app.use(helmet()); // Configura cabeceras HTTP seguras
 

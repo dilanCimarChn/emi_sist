@@ -1,0 +1,49 @@
+.docente-container {
+    min-height: 100vh;
+    background-color: #f3f4f6;
+    padding: 20px;
+  }
+  
+  .docente-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 20px 25px;
+    margin-bottom: 30px;
+    background-color: white;
+    border-radius: 10px;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+  }
+  
+  .docente-header h1 {
+    margin: 0;
+    font-size: 24px;
+    color: #111827;
+    font-weight: 600;
+  }
+  
+  .docente-actions {
+    display: flex;
+    align-items: center;
+    gap: 20px;
+  }
+  
+  .docente-content {
+    background-color: white;
+    border-radius: 10px;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+    padding: 30px;
+  }
+  
+  .loading-container, .error-container {
+    text-align: center;
+    padding: 40px;
+    font-size: 16px;
+    color: #4b5563;
+  }
+  
+  .error-container {
+    color: #b91c1c;
+    background-color: #fee2e2;
+    border-radius: 8px;
+  }

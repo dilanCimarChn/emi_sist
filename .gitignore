@@ -11,7 +11,7 @@ frontend/dist/
 backend/node_modules/
 backend/.env
 
-# Ignorar archivos de configuración y cache
+# Ignorar archivos de configuración y caches
 .env
 *.log
 .DS_Store

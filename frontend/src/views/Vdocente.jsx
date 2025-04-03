@@ -14,7 +14,7 @@ const Vdocente = ({ actualizarRol }) => {
   return (
     <div>
       <h1>Panel del Docente</h1>
-      <p>Bienvenido docente, aquí podrás gestionar tus actividades académicas.</p>
+      <p>Bienvenido docente, aquí podrás gestionar tus actividades académicas</p>
       
       <button onClick={handleLogout}>
         Cerrar Sesión

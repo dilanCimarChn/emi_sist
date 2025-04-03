@@ -1,0 +1,150 @@
+.detalle-docente {
+    height: 100%;
+    overflow-y: auto;
+  }
+  
+  .detalle-header {
+    display: flex;
+    align-items: center;
+    padding-bottom: 20px;
+    margin-bottom: 25px;
+    border-bottom: 1px solid #e5e7eb;
+  }
+  
+  .docente-foto {
+    margin-right: 25px;
+  }
+  
+  .docente-foto img {
+    width: 120px;
+    height: 120px;
+    border-radius: 50%;
+    object-fit: cover;
+    border: 4px solid #e5e7eb;
+  }
+  
+  .foto-placeholder {
+    width: 120px;
+    height: 120px;
+    border-radius: 50%;
+    background-color: #e5e7eb;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 32px;
+    color: #9ca3af;
+    font-weight: 600;
+    border: 4px solid #e5e7eb;
+  }
+  
+  .docente-titulo {
+    flex: 1;
+  }
+  
+  .docente-titulo h2 {
+    margin: 0 0 10px 0;
+    font-size: 24px;
+    color: #111827;
+  }
+  
+  .docente-titulo p {
+    margin: 0 0 5px 0;
+    font-size: 16px;
+    color: #4b5563;
+  }
+  
+  .docente-acciones {
+    margin-left: 20px;
+  }
+  
+  .btn-asignar-horario {
+    background-color: #3b82f6;
+    color: white;
+    border: none;
+    border-radius: 6px;
+    padding: 10px 16px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: background-color 0.2s;
+  }
+  
+  .btn-asignar-horario:hover {
+    background-color: #2563eb;
+  }
+  
+  .detalle-body {
+    padding: 0 20px;
+  }
+  
+  .detalle-section {
+    margin-bottom: 30px;
+  }
+  
+  .detalle-section h3 {
+    font-size: 18px;
+    color: #111827;
+    margin: 0 0 15px 0;
+    padding-bottom: 10px;
+    border-bottom: 2px solid #e5e7eb;
+    font-weight: 600;
+  }
+  
+  .detalle-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 15px;
+  }
+  
+  .detalle-item {
+    display: flex;
+    flex-direction: column;
+  }
+  
+  .detalle-label {
+    font-size: 14px;
+    color: #6b7280;
+    margin-bottom: 5px;
+  }
+  
+  .detalle-value {
+    font-size: 16px;
+    color: #111827;
+  }
+  
+  .detalle-subsection {
+    margin-top: 20px;
+    padding-top: 15px;
+    border-top: 1px solid #e5e7eb;
+  }
+  
+  .detalle-subsection h4 {
+    font-size: 16px;
+    color: #111827;
+    margin: 0 0 15px 0;
+    font-weight: 500;
+  }
+  
+  @media (max-width: 768px) {
+    .detalle-header {
+      flex-direction: column;
+      align-items: flex-start;
+    }
+    
+    .docente-foto {
+      margin: 0 0 20px 0;
+      align-self: center;
+    }
+    
+    .docente-acciones {
+      margin: 20px 0 0 0;
+      width: 100%;
+    }
+    
+    .btn-asignar-horario {
+      width: 100%;
+    }
+    
+    .detalle-grid {
+      grid-template-columns: 1fr;
+    }
+  }

@@ -1,0 +1,65 @@
+.lista-docentes {
+    height: 100%;
+    overflow-y: auto;
+  }
+  
+  .docentes-list {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+  }
+  
+  .docente-item {
+    display: flex;
+    align-items: center;
+    padding: 15px;
+    border-radius: 6px;
+    margin-bottom: 10px;
+    cursor: pointer;
+    transition: background-color 0.2s;
+  }
+  
+  .docente-item:hover {
+    background-color: #f3f4f6;
+  }
+  
+  .docente-item.selected {
+    background-color: #e0e7ff;
+    border-left: 4px solid #4f46e5;
+  }
+  
+  .docente-avatar {
+    margin-right: 15px;
+  }
+  
+  .docente-avatar img {
+    width: 50px;
+    height: 50px;
+    border-radius: 50%;
+    object-fit: cover;
+  }
+  
+  .avatar-placeholder {
+    width: 50px;
+    height: 50px;
+    border-radius: 50%;
+    background-color: #e5e7eb;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 18px;
+    color: #6b7280;
+    font-weight: 600;
+  }
+  
+  .docente-info h3 {
+    margin: 0 0 5px 0;
+    font-size: 16px;
+    color: #111827;
+  }
+  
+  .docente-info p {
+    margin: 0;
+    font-size: 14px;
+    color: #6b7280;
+  }

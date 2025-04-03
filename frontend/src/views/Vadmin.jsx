@@ -1,36 +1,103 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
+import axios from 'axios';
 import NotificacionMenu from '../components/notifications/NotificacionMenu';
+import ListaDocentes from '../components/admin/ListaDocentes.jsx';
+import DetalleDocente from '../components/admin/DetalleDocente.jsx';
 import './Vadmin.css';
 
 const Vadmin = ({ actualizarRol }) => {
-    const navigate = useNavigate();
+  const navigate = useNavigate();
+  const [docentes, setDocentes] = useState([]);
+  const [docenteSeleccionado, setDocenteSeleccionado] = useState(null);
+  const [loadingDocentes, setLoadingDocentes] = useState(true);
+  const [error, setError] = useState(null);
 
-    const handleLogout = () => {
-        localStorage.removeItem('authToken');
-        localStorage.removeItem('rol');
-        actualizarRol(null);
-        navigate('/', { replace: true });
+  useEffect(() => {
+    const fetchDocentes = async () => {
+      try {
+        const token = localStorage.getItem('authToken');
+        const response = await axios.get('http://localhost:5000/api/docentes', {
+          headers: {
+            'Authorization': `Bearer ${token}`
+          }
+        });
+        setDocentes(response.data);
+        setLoadingDocentes(false);
+      } catch (err) {
+        console.error('Error al obtener lista de docentes:', err);
+        setError('No se pudieron cargar los docentes');
+        setLoadingDocentes(false);
+      }
     };
 
-    return (
-        <div className="admin-container">
-            <div className="admin-header">
-                <h1>Panel de Administrador</h1>
-                <div className="admin-actions">
-                    <NotificacionMenu />
-                    <button className="logout-button" onClick={handleLogout}>
-                        Cerrar Sesión
-                    </button>
-                </div>
-            </div>
-            
-            <div className="admin-content">
-                <p>Bienvenido administrador, aquí puedes gestionar el sistema.</p>
-                <p>Utiliza el icono de notificaciones para ver las solicitudes pendientes de acceso.</p>
-            </div>
+    fetchDocentes();
+  }, []);
+
+  const handleDocenteClick = async (docenteId) => {
+    try {
+      const token = localStorage.getItem('authToken');
+      const response = await axios.get(`http://localhost:5000/api/docentes/${docenteId}`, {
+        headers: {
+          'Authorization': `Bearer ${token}`
+        }
+      });
+      setDocenteSeleccionado(response.data);
+    } catch (err) {
+      console.error('Error al obtener detalles del docente:', err);
+      setError('No se pudieron cargar los detalles del docente');
+    }
+  };
+
+  const handleLogout = () => {
+    localStorage.removeItem('authToken');
+    localStorage.removeItem('rol');
+    actualizarRol(null);
+    navigate('/', { replace: true });
+  };
+
+  return (
+    <div className="admin-container">
+      <div className="admin-header">
+        <h1>Panel de Administrador</h1>
+        <div className="admin-actions">
+          <NotificacionMenu />
+          <button className="logout-button" onClick={handleLogout}>
+            Cerrar Sesión
+          </button>
         </div>
-    );
+      </div>
+      
+      <div className="admin-content">
+        <div className="admin-layout">
+          <div className="admin-sidebar">
+            <h2>Docentes</h2>
+            {loadingDocentes ? (
+              <p>Cargando lista de docentes...</p>
+            ) : error ? (
+              <p className="error-message">{error}</p>
+            ) : (
+              <ListaDocentes 
+                docentes={docentes} 
+                onDocenteClick={handleDocenteClick}
+                docenteSeleccionadoId={docenteSeleccionado?.id}
+              />
+            )}
+          </div>
+          
+          <div className="admin-main-content">
+            {docenteSeleccionado ? (
+              <DetalleDocente docente={docenteSeleccionado} />
+            ) : (
+              <div className="admin-placeholder">
+                <p>Seleccione un docente para ver sus detalles</p>
+              </div>
+            )}
+          </div>
+        </div>
+      </div>
+    </div>
+  );
 };
 
 export default Vadmin;

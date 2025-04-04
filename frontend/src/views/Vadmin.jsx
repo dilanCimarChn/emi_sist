@@ -1,9 +1,10 @@
+// src/pages/Vadmin.jsx
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import NotificacionMenu from '../components/notifications/NotificacionMenu';
-import ListaDocentes from '../components/admin/ListaDocentes.jsx';
-import DetalleDocente from '../components/admin/DetalleDocente.jsx';
+import ListaDocentes from '../components/admin/ListaDocentes';
+import DetalleDocente from '../components/admin/DetalleDocente';
 import './Vadmin.css';
 
 const Vadmin = ({ actualizarRol }) => {
@@ -18,19 +19,16 @@ const Vadmin = ({ actualizarRol }) => {
       try {
         const token = localStorage.getItem('authToken');
         const response = await axios.get('http://localhost:5000/api/docentes', {
-          headers: {
-            'Authorization': `Bearer ${token}`
-          }
+          headers: { 'Authorization': `Bearer ${token}` }
         });
         setDocentes(response.data);
         setLoadingDocentes(false);
       } catch (err) {
-        console.error('Error al obtener lista de docentes:', err);
+        console.error('❌ Error al obtener docentes:', err);
         setError('No se pudieron cargar los docentes');
         setLoadingDocentes(false);
       }
     };
-
     fetchDocentes();
   }, []);
 
@@ -38,13 +36,11 @@ const Vadmin = ({ actualizarRol }) => {
     try {
       const token = localStorage.getItem('authToken');
       const response = await axios.get(`http://localhost:5000/api/docentes/${docenteId}`, {
-        headers: {
-          'Authorization': `Bearer ${token}`
-        }
+        headers: { 'Authorization': `Bearer ${token}` }
       });
-      setDocenteSeleccionado(response.data);
+      setDocenteSeleccionado(response.data); // 👈 depende de tu backend
     } catch (err) {
-      console.error('Error al obtener detalles del docente:', err);
+      console.error('❌ Error al obtener detalle del docente:', err);
       setError('No se pudieron cargar los detalles del docente');
     }
   };
@@ -53,7 +49,7 @@ const Vadmin = ({ actualizarRol }) => {
     localStorage.removeItem('authToken');
     localStorage.removeItem('rol');
     actualizarRol(null);
-    navigate('/', { replace: true });
+    navigate('/');
   };
 
   return (
@@ -62,12 +58,10 @@ const Vadmin = ({ actualizarRol }) => {
         <h1>Panel de Administrador</h1>
         <div className="admin-actions">
           <NotificacionMenu />
-          <button className="logout-button" onClick={handleLogout}>
-            Cerrar Sesión
-          </button>
+          <button className="logout-button" onClick={handleLogout}>Cerrar Sesión</button>
         </div>
       </div>
-      
+
       <div className="admin-content">
         <div className="admin-layout">
           <div className="admin-sidebar">
@@ -77,14 +71,14 @@ const Vadmin = ({ actualizarRol }) => {
             ) : error ? (
               <p className="error-message">{error}</p>
             ) : (
-              <ListaDocentes 
-                docentes={docentes} 
+              <ListaDocentes
+                docentes={docentes}
                 onDocenteClick={handleDocenteClick}
                 docenteSeleccionadoId={docenteSeleccionado?.id}
               />
             )}
           </div>
-          
+
           <div className="admin-main-content">
             {docenteSeleccionado ? (
               <DetalleDocente docente={docenteSeleccionado} />

@@ -147,6 +147,38 @@ const getTodosLosDocentes = async (req, res) => {
   }
 };
 
+const actualizarDocente = async (req, res) => {
+  const { id } = req.params;
+  const {
+    nombres, apellidos, correo_electronico, grado_academico,
+    titulo, universidad, anio_titulacion
+  } = req.body;
+
+  try {
+    const result = await pool.query(
+      `UPDATE docentes SET
+        nombres = $1,
+        apellidos = $2,
+        correo_electronico = $3,
+        grado_academico = $4,
+        titulo = $5,
+        universidad = $6,
+        anio_titulacion = $7
+      WHERE id = $8 RETURNING *`,
+      [
+        nombres, apellidos, correo_electronico,
+        grado_academico, titulo, universidad,
+        anio_titulacion, id
+      ]
+    );
+
+    res.status(200).json({ message: 'Docente actualizado', docente: result.rows[0] });
+  } catch (error) {
+    console.error('❌ Error actualizando docente:', error);
+    res.status(500).json({ error: 'Error al actualizar el docente' });
+  }
+};
+
 
 // ✅ EXPORTA TODO JUNTO
 module.exports = {

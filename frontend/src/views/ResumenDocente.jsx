@@ -58,10 +58,10 @@ const ResumenDocente = () => {
         <div>
           <strong>Fotografía:</strong><br />
           <img
-            src={`http://localhost:5000/uploads/${docente.fotografia}`}
-            alt="Fotografía"
-            style={{ width: '200px', borderRadius: '8px', marginTop: '10px' }}
+            src={`/uploads/${docente.fotografia}`}
+            alt="Foto del docente"
           />
+
         </div>
       )}
     </div>

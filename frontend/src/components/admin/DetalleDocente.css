@@ -1,150 +1,236 @@
-.detalle-docente {
-    height: 100%;
-    overflow-y: auto;
+.detalle-docente-container {
+  padding: 20px;
+  background-color: #f5f7fa;
+  border-radius: 8px;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+}
+
+.detalle-header {
+  display: flex;
+  align-items: center;
+  margin-bottom: 20px;
+  position: relative;
+}
+
+.btn-volver {
+  background-color: transparent;
+  border: none;
+  color: #409eff;
+  cursor: pointer;
+  font-size: 14px;
+  display: flex;
+  align-items: center;
+  padding: 8px 12px;
+  border-radius: 4px;
+  margin-right: 15px;
+  transition: background-color 0.3s;
+}
+
+.btn-volver:hover {
+  background-color: #ecf5ff;
+}
+
+.detalle-header h1 {
+  color: #2c3e50;
+  font-size: 22px;
+  margin: 0;
+  border-bottom: 2px solid #3498db;
+  padding-bottom: 8px;
+  flex-grow: 1;
+}
+
+.detalle-content {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 20px;
+}
+
+.card {
+  background-color: white;
+  border-radius: 8px;
+  padding: 20px;
+  box-shadow: 0 2px 12px 0 rgba(0, 0, 0, 0.05);
+}
+
+.card h2 {
+  margin-top: 0;
+  margin-bottom: 16px;
+  color: #303133;
+  font-size: 18px;
+  border-bottom: 1px solid #ebeef5;
+  padding-bottom: 10px;
+}
+
+.info-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  gap: 15px;
+}
+
+.info-item {
+  margin-bottom: 10px;
+}
+
+.label {
+  display: block;
+  color: #909399;
+  font-size: 14px;
+  margin-bottom: 4px;
+}
+
+.value {
+  color: #303133;
+  font-size: 15px;
+  word-break: break-word;
+}
+
+.status {
+  display: inline-block;
+  padding: 4px 8px;
+  border-radius: 4px;
+  font-size: 13px;
+  font-weight: 500;
+}
+
+.status.activo {
+  background-color: #e1f5ee;
+  color: #10b981;
+}
+
+.status.inactivo {
+  background-color: #fee2e2;
+  color: #ef4444;
+}
+
+.status.pendiente {
+  background-color: #fef3c7;
+  color: #f59e0b;
+}
+
+.documentos-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.documentos-list li {
+  padding: 10px;
+  border-bottom: 1px solid #ebeef5;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.documentos-list li:last-child {
+  border-bottom: none;
+}
+
+.doc-name {
+  font-size: 14px;
+  color: #606266;
+}
+
+.doc-link {
+  color: #409eff;
+  text-decoration: none;
+  padding: 4px 8px;
+  border-radius: 4px;
+  background-color: #ecf5ff;
+  font-size: 13px;
+  transition: all 0.3s;
+}
+
+.doc-link:hover {
+  background-color: #409eff;
+  color: white;
+}
+
+.action-buttons-container {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.btn-estado, .btn-editar {
+  padding: 8px 16px;
+  border-radius: 4px;
+  font-size: 14px;
+  cursor: pointer;
+  border: none;
+  transition: all 0.3s;
+}
+
+.btn-estado.aprobar {
+  background-color: #f0f9eb;
+  color: #67c23a;
+  border: 1px solid #e1f3d8;
+}
+
+.btn-estado.aprobar:hover:not(:disabled) {
+  background-color: #67c23a;
+  color: white;
+}
+
+.btn-estado.rechazar {
+  background-color: #fef0f0;
+  color: #f56c6c;
+  border: 1px solid #fde2e2;
+}
+
+.btn-estado.rechazar:hover:not(:disabled) {
+  background-color: #f56c6c;
+  color: white;
+}
+
+.btn-estado.pendiente {
+  background-color: #fdf6ec;
+  color: #e6a23c;
+  border: 1px solid #faecd8;
+}
+
+.btn-estado.pendiente:hover:not(:disabled) {
+  background-color: #e6a23c;
+  color: white;
+}
+
+.btn-editar {
+  background-color: #ecf5ff;
+  color: #409eff;
+  border: 1px solid #d9ecff;
+}
+
+.btn-editar:hover {
+  background-color: #409eff;
+  color: white;
+}
+
+.btn-estado:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.loading-container, .error-container {
+  padding: 40px;
+  text-align: center;
+  background-color: white;
+  border-radius: 8px;
+  box-shadow: 0 2px 12px 0 rgba(0, 0, 0, 0.05);
+}
+
+.error-container {
+  color: #f56c6c;
+}
+
+@media (max-width: 768px) {
+  .info-grid {
+    grid-template-columns: 1fr;
   }
   
-  .detalle-header {
-    display: flex;
-    align-items: center;
-    padding-bottom: 20px;
-    margin-bottom: 25px;
-    border-bottom: 1px solid #e5e7eb;
-  }
-  
-  .docente-foto {
-    margin-right: 25px;
-  }
-  
-  .docente-foto img {
-    width: 120px;
-    height: 120px;
-    border-radius: 50%;
-    object-fit: cover;
-    border: 4px solid #e5e7eb;
-  }
-  
-  .foto-placeholder {
-    width: 120px;
-    height: 120px;
-    border-radius: 50%;
-    background-color: #e5e7eb;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 32px;
-    color: #9ca3af;
-    font-weight: 600;
-    border: 4px solid #e5e7eb;
-  }
-  
-  .docente-titulo {
-    flex: 1;
-  }
-  
-  .docente-titulo h2 {
-    margin: 0 0 10px 0;
-    font-size: 24px;
-    color: #111827;
-  }
-  
-  .docente-titulo p {
-    margin: 0 0 5px 0;
-    font-size: 16px;
-    color: #4b5563;
-  }
-  
-  .docente-acciones {
-    margin-left: 20px;
-  }
-  
-  .btn-asignar-horario {
-    background-color: #3b82f6;
-    color: white;
-    border: none;
-    border-radius: 6px;
-    padding: 10px 16px;
-    font-weight: 500;
-    cursor: pointer;
-    transition: background-color 0.2s;
-  }
-  
-  .btn-asignar-horario:hover {
-    background-color: #2563eb;
-  }
-  
-  .detalle-body {
-    padding: 0 20px;
-  }
-  
-  .detalle-section {
-    margin-bottom: 30px;
-  }
-  
-  .detalle-section h3 {
-    font-size: 18px;
-    color: #111827;
-    margin: 0 0 15px 0;
-    padding-bottom: 10px;
-    border-bottom: 2px solid #e5e7eb;
-    font-weight: 600;
-  }
-  
-  .detalle-grid {
-    display: grid;
-    grid-template-columns: repeat(2, 1fr);
-    gap: 15px;
-  }
-  
-  .detalle-item {
-    display: flex;
+  .action-buttons-container {
     flex-direction: column;
   }
   
-  .detalle-label {
-    font-size: 14px;
-    color: #6b7280;
-    margin-bottom: 5px;
+  .btn-estado, .btn-editar {
+    width: 100%;
   }
-  
-  .detalle-value {
-    font-size: 16px;
-    color: #111827;
-  }
-  
-  .detalle-subsection {
-    margin-top: 20px;
-    padding-top: 15px;
-    border-top: 1px solid #e5e7eb;
-  }
-  
-  .detalle-subsection h4 {
-    font-size: 16px;
-    color: #111827;
-    margin: 0 0 15px 0;
-    font-weight: 500;
-  }
-  
-  @media (max-width: 768px) {
-    .detalle-header {
-      flex-direction: column;
-      align-items: flex-start;
-    }
-    
-    .docente-foto {
-      margin: 0 0 20px 0;
-      align-self: center;
-    }
-    
-    .docente-acciones {
-      margin: 20px 0 0 0;
-      width: 100%;
-    }
-    
-    .btn-asignar-horario {
-      width: 100%;
-    }
-    
-    .detalle-grid {
-      grid-template-columns: 1fr;
-    }
-  }
+}

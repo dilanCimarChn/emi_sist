@@ -23,10 +23,11 @@ const DetalleDocente = ({ docente }) => {
 
         {docente.fotografia && (
           <img
-            src={`http://localhost:5000/uploads/${docente.fotografia}`}
-            alt="Fotografía"
+            src={`/uploads/${docente.fotografia}`}
+            alt="Foto del docente"
             className="docente-foto"
           />
+
         )}
       </div>
 

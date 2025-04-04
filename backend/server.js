@@ -13,6 +13,10 @@ const docenteRoutes = require('./routes/docenteRoutes');
 const app = express();
 const port = process.env.PORT || 5000;
 
+const path = require('path');
+
+app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
+
 // 🔐 Seguridad HTTP con Helmet
 app.use(helmet());
 

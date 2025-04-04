@@ -1,0 +1,48 @@
+.form-docente {
+    max-width: 700px;
+    margin: 2rem auto;
+    padding: 2rem;
+    background-color: #1f1f1f;
+    border-radius: 12px;
+    color: #fff;
+    box-shadow: 0 0 15px rgba(0, 0, 0, 0.4);
+  }
+  
+  .form-docente h2 {
+    text-align: center;
+    margin-bottom: 1.5rem;
+  }
+  
+  .form-docente input,
+  .form-docente select,
+  .form-docente textarea {
+    width: 100%;
+    padding: 0.7rem;
+    margin-bottom: 1rem;
+    border: none;
+    border-radius: 8px;
+    background-color: #2c2c2c;
+    color: #fff;
+  }
+  
+  .form-docente input[type="file"] {
+    background-color: transparent;
+    color: #ccc;
+  }
+  
+  .form-docente button {
+    width: 100%;
+    padding: 0.8rem;
+    background-color: #6a0dad;
+    color: white;
+    border: none;
+    border-radius: 10px;
+    font-weight: bold;
+    cursor: pointer;
+    transition: background 0.3s ease;
+  }
+  
+  .form-docente button:hover {
+    background-color: #8b2bd7;
+  }
+  

@@ -11,6 +11,7 @@ const validateDbConfig = () => {
         }
     });
 
+    
     console.log('Configuración de base de datos:');
     console.log('Usuario:', process.env.DB_USER);
     console.log('Host:', process.env.DB_HOST);

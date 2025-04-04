@@ -1,9 +1,12 @@
 // src/components/admin/DetalleDocente.jsx
 import React from 'react';
+import { useNavigate } from 'react-router-dom';
 import './DetalleDocente.css';
 
 const DetalleDocente = ({ docente }) => {
-  if (!docente) return <p>No hay docente seleccionado.</p>;
+  const navigate = useNavigate();
+
+  if (!docente) return null;
 
   return (
     <div className="detalle-docente-container">
@@ -27,27 +30,12 @@ const DetalleDocente = ({ docente }) => {
         )}
       </div>
 
-      {docente.estudios?.length > 0 && (
-        <div>
-          <h3>Estudios Complementarios</h3>
-          {docente.estudios.map((est, i) => (
-            <div key={i} className="estudio-item">
-              <p><strong>Tipo:</strong> {est.tipo}</p>
-              <p><strong>Universidad:</strong> {est.universidad}</p>
-              <p><strong>Año:</strong> {est.anio}</p>
-              {est.certificado && (
-                <a
-                  href={`http://localhost:5000/uploads/${est.certificado}`}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                >
-                  Ver certificado
-                </a>
-              )}
-            </div>
-          ))}
-        </div>
-      )}
+      <button
+        className="btn-editar-detalle"
+        onClick={() => navigate(`/admin/docentes/editar/${docente.id}`)}
+      >
+        Editar información
+      </button>
     </div>
   );
 };

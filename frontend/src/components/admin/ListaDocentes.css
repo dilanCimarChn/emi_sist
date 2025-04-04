@@ -1,6 +1,6 @@
 .lista-docentes-container {
   padding: 20px;
-  background-color: #f8fafc;
+  background-color: #ffffff;
 }
 
 h1 {
@@ -11,13 +11,14 @@ h1 {
 
 .table-responsive {
   overflow-x: auto;
+  margin-bottom: 20px;
 }
 
 .docentes-table {
   width: 100%;
   border-collapse: collapse;
   background-color: white;
-  box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
   border-radius: 10px;
   overflow: hidden;
 }
@@ -27,9 +28,20 @@ h1 {
   padding: 12px 16px;
   text-align: left;
   border-bottom: 1px solid #e2e8f0;
+  color: #333333;
 }
 
-.docentes-table thead {
+.docentes-table th {
+  background-color: #e2f0ff;
+  color: #000000;
+  font-weight: 600;
+}
+
+.docentes-table tbody tr:hover {
+  background-color: #f8fafc;
+}
+
+.fila-activa {
   background-color: #e2f0ff;
 }
 
@@ -58,6 +70,7 @@ h1 {
   border: none;
   border-radius: 6px;
   cursor: pointer;
+  font-weight: 500;
 }
 
 .btn-editar {
@@ -67,6 +80,7 @@ h1 {
   border: none;
   border-radius: 6px;
   cursor: pointer;
+  font-weight: 500;
 }
 
 .btn-ver:hover {
@@ -89,6 +103,7 @@ h1 {
   margin: 0 5px;
   border-radius: 5px;
   cursor: pointer;
+  color: #333333;
 }
 
 .pagination button.active {

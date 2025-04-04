@@ -1,8 +1,8 @@
 .detalle-docente-container {
   padding: 20px;
-  background-color: #f5f7fa;
+  background-color: #ffffff;
   border-radius: 8px;
-  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
 }
 
 .detalle-header {
@@ -39,6 +39,21 @@
   flex-grow: 1;
 }
 
+h2 {
+  color: #333333;
+  font-size: 22px;
+  margin-bottom: 20px;
+  border-bottom: 2px solid #3498db;
+  padding-bottom: 8px;
+}
+
+h3 {
+  color: #333333;
+  font-size: 18px;
+  margin-top: 20px;
+  margin-bottom: 15px;
+}
+
 .detalle-content {
   display: grid;
   grid-template-columns: 1fr;
@@ -65,6 +80,17 @@
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
   gap: 15px;
+  margin-bottom: 20px;
+}
+
+.info-grid p {
+  margin: 8px 0;
+  color: #333333;
+}
+
+.info-grid strong {
+  font-weight: 600;
+  color: #000000;
 }
 
 .info-item {
@@ -73,7 +99,7 @@
 
 .label {
   display: block;
-  color: #909399;
+  color: #333333;
   font-size: 14px;
   margin-bottom: 4px;
 }
@@ -127,7 +153,7 @@
 
 .doc-name {
   font-size: 14px;
-  color: #606266;
+  color: #333333;
 }
 
 .doc-link {
@@ -142,6 +168,48 @@
 
 .doc-link:hover {
   background-color: #409eff;
+  color: white;
+}
+
+.docente-foto {
+  max-width: 200px;
+  max-height: 200px;
+  border-radius: 4px;
+  margin-top: 10px;
+}
+
+.estudio-item {
+  background-color: #f8f9fa;
+  border-radius: 6px;
+  padding: 15px;
+  margin-bottom: 15px;
+  border-left: 3px solid #3498db;
+}
+
+.estudio-item p {
+  margin: 5px 0;
+  color: #333333;
+}
+
+.estudio-item strong {
+  font-weight: 600;
+  color: #000000;
+}
+
+.estudio-item a {
+  display: inline-block;
+  margin-top: 10px;
+  color: #2563eb;
+  text-decoration: none;
+  padding: 5px 10px;
+  background-color: #e2f0ff;
+  border-radius: 4px;
+  font-size: 14px;
+  transition: all 0.3s;
+}
+
+.estudio-item a:hover {
+  background-color: #2563eb;
   color: white;
 }
 

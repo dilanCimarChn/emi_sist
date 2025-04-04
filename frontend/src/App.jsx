@@ -3,6 +3,7 @@ import { useState } from 'react';
 import Login from './components/login/Login';
 import Vadmin from './views/Vadmin';
 import Vdocente from './views/Vdocente';
+import EditarDocente from './components/admin/EditarDocente';
 
 const App = () => {
   const [rol, setRol] = useState(localStorage.getItem('rol'));
@@ -18,6 +19,7 @@ const App = () => {
         <Route path="/" element={<Login actualizarRol={actualizarRol} />} />
         <Route path="/admin" element={rol === 'admin' ? <Vadmin actualizarRol={actualizarRol} /> : <Navigate to="/" />} />
         <Route path="/docente" element={rol === 'docente' ? <Vdocente actualizarRol={actualizarRol} /> : <Navigate to="/" />} />
+        <Route path="/admin/docentes/editar/:id" element={<EditarDocente />} />
       </Routes>
     </BrowserRouter>
   );

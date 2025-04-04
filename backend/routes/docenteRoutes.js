@@ -50,3 +50,7 @@ router.get('/', getTodosLosDocentes); // ✅ Esta debe ir antes de /:id
 router.get('/:id', getDocentePorId);
 
 module.exports = router;
+
+const { actualizarDocente } = require('../controllers/docenteController');
+
+router.put('/:id', actualizarDocente);

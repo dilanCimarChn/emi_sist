@@ -185,6 +185,7 @@ module.exports = {
   crearDocente,
   obtenerDocentePorUsuarioId,
   getDocentePorId,
+
   getTodosLosDocentes,
   actualizarDocente // 👈 nueva exportación
 };

@@ -1,3 +1,4 @@
+// src/pages/DetalleDocente.jsx
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import axios from 'axios';
@@ -9,49 +10,35 @@ const DetalleDocente = () => {
   const [docente, setDocente] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-  const [cambioEstado, setCambioEstado] = useState(false);
 
   useEffect(() => {
     const fetchDocente = async () => {
       try {
-        const response = await axios.get(`/api/docentes/${id}`);
+        const response = await axios.get(`http://localhost:5000/api/docentes/${id}`);
         setDocente(response.data);
         setLoading(false);
       } catch (err) {
         setError('Error al cargar los datos del docente');
         setLoading(false);
-        console.error('Error al obtener el docente:', err);
+        console.error('❌ Error al obtener el docente:', err);
       }
     };
 
     fetchDocente();
-  }, [id, cambioEstado]);
-
-  const handleCambioEstado = async (nuevoEstado) => {
-    try {
-      await axios.patch(`/api/docentes/${id}/estado`, { estado: nuevoEstado });
-      setCambioEstado(!cambioEstado);
-      alert(`Estado del docente actualizado a: ${nuevoEstado}`);
-    } catch (err) {
-      alert('Error al actualizar el estado del docente');
-      console.error('Error al actualizar el estado:', err);
-    }
-  };
+  }, [id]);
 
   const handleVolver = () => {
-    navigate('/admin/docentes');
+    navigate('/admin');
   };
 
-  if (loading) return <div className="loading-container">Cargando datos del docente...</div>;
-  if (error) return <div className="error-container">{error}</div>;
-  if (!docente) return <div className="error-container">No se encontró información del docente</div>;
+  if (loading) return <div className="loading">Cargando datos del docente...</div>;
+  if (error) return <div className="error">{error}</div>;
+  if (!docente) return <div className="error">No se encontró información del docente</div>;
 
   return (
     <div className="detalle-docente-container">
       <div className="detalle-header">
-        <button className="btn-volver" onClick={handleVolver}>
-          ← Volver a la lista
-        </button>
+        <button className="btn-volver" onClick={handleVolver}>← Volver</button>
         <h1>Detalle del Docente</h1>
       </div>
 
@@ -61,133 +48,99 @@ const DetalleDocente = () => {
           <div className="info-grid">
             <div className="info-item">
               <span className="label">Nombre:</span>
-              <span className="value">{docente.nombre} {docente.apellido}</span>
+              <span className="value">{docente.nombres} {docente.apellidos}</span>
             </div>
             <div className="info-item">
               <span className="label">Correo:</span>
-              <span className="value">{docente.correo}</span>
+              <span className="value">{docente.correo_electronico}</span>
             </div>
             <div className="info-item">
-              <span className="label">Teléfono:</span>
-              <span className="value">{docente.telefono || 'No especificado'}</span>
+              <span className="label">CI:</span>
+              <span className="value">{docente.ci}</span>
             </div>
             <div className="info-item">
-              <span className="label">Departamento:</span>
-              <span className="value">{docente.departamento}</span>
+              <span className="label">Género:</span>
+              <span className="value">{docente.genero}</span>
             </div>
             <div className="info-item">
-              <span className="label">Estado:</span>
-              <span className={`status ${docente.estado?.toLowerCase()}`}>
-                {docente.estado || 'Pendiente'}
-              </span>
+              <span className="label">Grado Académico:</span>
+              <span className="value">{docente.grado_academico}</span>
             </div>
             <div className="info-item">
-              <span className="label">Fecha de registro:</span>
-              <span className="value">
-                {new Date(docente.createdAt).toLocaleDateString('es-ES', {
-                  day: '2-digit',
-                  month: '2-digit',
-                  year: 'numeric',
-                  hour: '2-digit',
-                  minute: '2-digit'
-                })}
-              </span>
+              <span className="label">Título:</span>
+              <span className="value">{docente.titulo}</span>
+            </div>
+            <div className="info-item">
+              <span className="label">Año de Titulación:</span>
+              <span className="value">{docente.anio_titulacion}</span>
+            </div>
+            <div className="info-item">
+              <span className="label">Universidad:</span>
+              <span className="value">{docente.universidad}</span>
+            </div>
+            <div className="info-item">
+              <span className="label">Experiencia Laboral:</span>
+              <span className="value">{docente.experiencia_laboral} años</span>
+            </div>
+            <div className="info-item">
+              <span className="label">Experiencia Docente:</span>
+              <span className="value">{docente.experiencia_docente} años</span>
+            </div>
+            <div className="info-item">
+              <span className="label">Categoría:</span>
+              <span className="value">{docente.categoria_docente}</span>
+            </div>
+            <div className="info-item">
+              <span className="label">Modalidad de Ingreso:</span>
+              <span className="value">{docente.modalidad_ingreso}</span>
+            </div>
+            <div className="info-item">
+              <span className="label">Asignaturas:</span>
+              <span className="value">{docente.asignaturas}</span>
             </div>
           </div>
         </div>
 
-        {docente.formacion && (
+        {/* Foto si existe */}
+        {docente.fotografia && (
           <div className="card">
-            <h2>Formación Académica</h2>
-            <div className="info-grid">
-              <div className="info-item">
-                <span className="label">Nivel de estudios:</span>
-                <span className="value">{docente.formacion.nivelEstudios}</span>
-              </div>
-              <div className="info-item">
-                <span className="label">Título:</span>
-                <span className="value">{docente.formacion.titulo}</span>
-              </div>
-              <div className="info-item">
-                <span className="label">Institución:</span>
-                <span className="value">{docente.formacion.institucion}</span>
-              </div>
-              <div className="info-item">
-                <span className="label">Año de graduación:</span>
-                <span className="value">{docente.formacion.anoGraduacion}</span>
-              </div>
-            </div>
+            <h2>Fotografía</h2>
+            <img
+              src={`http://localhost:5000/uploads/${docente.fotografia}`}
+              alt="Fotografía del docente"
+              className="foto-docente"
+            />
           </div>
         )}
 
-        {docente.experiencia && (
+        {/* Estudios complementarios */}
+        {docente.estudios && docente.estudios.length > 0 && (
           <div className="card">
-            <h2>Experiencia Docente</h2>
+            <h2>Estudios Complementarios</h2>
             <div className="info-grid">
-              <div className="info-item">
-                <span className="label">Años de experiencia:</span>
-                <span className="value">{docente.experiencia.anosExperiencia}</span>
-              </div>
-              <div className="info-item">
-                <span className="label">Asignaturas:</span>
-                <span className="value">{docente.experiencia.asignaturas?.join(', ')}</span>
-              </div>
-              <div className="info-item">
-                <span className="label">Nivel educativo:</span>
-                <span className="value">{docente.experiencia.nivelEducativo}</span>
-              </div>
-            </div>
-          </div>
-        )}
-
-        {docente.documentos && docente.documentos.length > 0 && (
-          <div className="card">
-            <h2>Documentos</h2>
-            <ul className="documentos-list">
-              {docente.documentos.map((doc, index) => (
-                <li key={index}>
-                  <span className="doc-name">{doc.nombre}</span>
-                  <a href={doc.url} target="_blank" rel="noopener noreferrer" className="doc-link">
-                    Ver documento
-                  </a>
-                </li>
+              {docente.estudios.map((est, index) => (
+                <div key={index} className="info-item">
+                  <span className="label">Tipo:</span>
+                  <span className="value">{est.tipo}</span><br />
+                  <span className="label">Universidad:</span>
+                  <span className="value">{est.universidad}</span><br />
+                  <span className="label">Año:</span>
+                  <span className="value">{est.anio}</span><br />
+                  {est.certificado && (
+                    <a
+                      href={`http://localhost:5000/uploads/${est.certificado}`}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="doc-link"
+                    >
+                      Ver certificado
+                    </a>
+                  )}
+                </div>
               ))}
-            </ul>
+            </div>
           </div>
         )}
-
-        <div className="card actions">
-          <h2>Acciones</h2>
-          <div className="action-buttons-container">
-            <button
-              className="btn-estado aprobar"
-              onClick={() => handleCambioEstado('Activo')}
-              disabled={docente.estado === 'Activo'}
-            >
-              Aprobar
-            </button>
-            <button
-              className="btn-estado rechazar"
-              onClick={() => handleCambioEstado('Inactivo')}
-              disabled={docente.estado === 'Inactivo'}
-            >
-              Rechazar
-            </button>
-            <button
-              className="btn-estado pendiente"
-              onClick={() => handleCambioEstado('Pendiente')}
-              disabled={docente.estado === 'Pendiente'}
-            >
-              Marcar como pendiente
-            </button>
-            <button 
-              className="btn-editar"
-              onClick={() => navigate(`/admin/docentes/editar/${id}`)}
-            >
-              Editar información
-            </button>
-          </div>
-        </div>
       </div>
     </div>
   );

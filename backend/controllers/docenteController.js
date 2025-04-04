@@ -1,5 +1,7 @@
+// backend/controllers/docenteController.js
 const pool = require('../db');
 
+// 👉 CREAR DOCENTE
 const crearDocente = async (req, res) => {
   const client = await pool.connect();
 
@@ -19,7 +21,7 @@ const crearDocente = async (req, res) => {
     if (!usuario_id) throw new Error('usuario_id es obligatorio');
 
     const fotografia = req.files?.['fotografia']?.[0]?.filename || null;
-    
+
     const result = await client.query(
       `INSERT INTO docentes (
         usuario_id, nombres, apellidos, correo_electronico, ci,
@@ -39,21 +41,19 @@ const crearDocente = async (req, res) => {
         modalidad_ingreso, asignaturas, fotografia
       ]
     );
-    
 
     const docenteId = result.rows[0]?.id;
     if (!docenteId) throw new Error('No se obtuvo ID del docente insertado');
 
-    // Estudios (diplomado, maestría, phd)
+    // 🧠 Extraer estudios
     const estudios = [];
     const extraerEstudios = (prefix, tipo) => {
       Object.keys(req.body).forEach(key => {
-        if (key.startsWith(prefix)) {
-          const [, index, field] = key.match(/\[(\d+)\]\[(\w+)\]/) || [];
-          if (index !== undefined && field) {
-            if (!estudios[index]) estudios[index] = { tipo };
-            estudios[index][field] = req.body[key];
-          }
+        const match = key.match(new RegExp(`${prefix}\\[(\\d+)\\]\\[(\\w+)\\]`));
+        if (match) {
+          const [, index, field] = match;
+          if (!estudios[index]) estudios[index] = { tipo };
+          estudios[index][field] = req.body[key];
         }
       });
     };
@@ -97,6 +97,7 @@ const crearDocente = async (req, res) => {
   }
 };
 
+// 👉 OBTENER DOCENTE POR USUARIO_ID
 const obtenerDocentePorUsuarioId = async (req, res) => {
   const { usuarioId } = req.params;
   try {
@@ -112,4 +113,45 @@ const obtenerDocentePorUsuarioId = async (req, res) => {
   }
 };
 
-module.exports = { crearDocente, obtenerDocentePorUsuarioId };
+// 👉 OBTENER DOCENTE POR ID (para vista detallada del admin)
+const getDocentePorId = async (req, res) => {
+  const { id } = req.params;
+
+  try {
+    const docenteResult = await pool.query('SELECT * FROM docentes WHERE id = $1', [id]);
+    if (docenteResult.rows.length === 0) {
+      return res.status(404).json({ error: 'Docente no encontrado' });
+    }
+
+    const docente = docenteResult.rows[0];
+
+    // Obtener estudios relacionados
+    const estudiosResult = await pool.query('SELECT * FROM estudios WHERE docente_id = $1', [id]);
+    docente.estudios = estudiosResult.rows;
+
+    res.json(docente);
+  } catch (error) {
+    console.error('Error al obtener el docente:', error);
+    res.status(500).json({ error: 'Error del servidor' });
+  }
+};
+
+// Obtener todos los docentes
+const getTodosLosDocentes = async (req, res) => {
+  try {
+    const result = await pool.query('SELECT * FROM docentes ORDER BY id ASC');
+    res.status(200).json(result.rows);
+  } catch (error) {
+    console.error('❌ Error al obtener docentes:', error);
+    res.status(500).json({ error: 'Error al obtener la lista de docentes' });
+  }
+};
+
+
+// ✅ EXPORTA TODO JUNTO
+module.exports = {
+  crearDocente,
+  obtenerDocentePorUsuarioId,
+  getDocentePorId,
+  getTodosLosDocentes // 👈 nueva exportación
+};

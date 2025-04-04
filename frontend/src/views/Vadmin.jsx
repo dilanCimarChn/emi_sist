@@ -38,7 +38,7 @@ const Vadmin = ({ actualizarRol }) => {
       const response = await axios.get(`http://localhost:5000/api/docentes/${docenteId}`, {
         headers: { 'Authorization': `Bearer ${token}` }
       });
-      setDocenteSeleccionado(response.data); // 👈 depende de tu backend
+      setDocenteSeleccionado(response.data);
     } catch (err) {
       console.error('❌ Error al obtener detalle del docente:', err);
       setError('No se pudieron cargar los detalles del docente');
@@ -64,8 +64,9 @@ const Vadmin = ({ actualizarRol }) => {
 
       <div className="admin-content">
         <div className="admin-layout">
-          <div className="admin-sidebar">
-            <h2>Docentes</h2>
+          {/* Lista más ancha */}
+          <div className="admin-sidebar wide">
+            <h2>Docentes Registrados</h2>
             {loadingDocentes ? (
               <p>Cargando lista de docentes...</p>
             ) : error ? (

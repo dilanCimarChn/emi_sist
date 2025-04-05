@@ -1,45 +1,194 @@
-.form-docente {
-  max-width: 700px;
-  margin: 2rem auto;
-  padding: 2rem;
+/* FormularioDocente.css - Tema Claro Mejorado */
+.formulario-wrapper {
+  max-width: 900px;
+  margin: 0 auto;
+  padding: 1.5rem;
   background-color: #ffffff;
   border-radius: 12px;
   color: #333333;
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+  position: relative;
 }
 
-.form-docente h2 {
+.formulario-header {
+  display: flex;
+  align-items: center;
+  margin-bottom: 2rem;
+  border-bottom: 2px solid #3b82f6;
+  padding-bottom: 1.5rem;
+}
+
+.formulario-header h2 {
+  flex: 1;
   text-align: center;
-  margin-bottom: 1.5rem;
   color: #333333;
   font-size: 1.8rem;
+  margin: 0;
+}
+
+/* Foto de perfil */
+.foto-preview {
+  width: 100px;
+  height: 100px;
+  border-radius: 50%;
+  overflow: hidden;
+  position: relative;
+  margin-right: 2rem;
+  background-color: #f8fafc;
+  border: 2px solid #e2e8f0;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  box-shadow: 0 3px 10px rgba(0, 0, 0, 0.08);
+}
+
+.foto-preview.empty {
+  background-color: #f1f5f9;
+}
+
+.foto-preview img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.upload-placeholder {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  color: #94a3b8;
+}
+
+.icon-user {
+  font-size: 2rem;
+  margin-bottom: 0.2rem;
+}
+
+.foto-upload {
+  position: absolute;
+  bottom: -10px;
+  right: -10px;
+  background-color: #ffffff;
+  border-radius: 50%;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+}
+
+.upload-btn {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  width: 35px;
+  height: 35px;
+  background-color: #3b82f6;
+  color: white;
+  border-radius: 50%;
+  cursor: pointer;
+  font-size: 0;
+  position: relative;
+  transition: background-color 0.3s;
+}
+
+.upload-btn:hover {
+  background-color: #2563eb;
+}
+
+.upload-btn::before {
+  content: "+";
+  font-size: 1.3rem;
+  font-weight: bold;
+}
+
+/* Navegación entre secciones */
+.form-navigation {
+  display: flex;
+  margin-bottom: 1.5rem;
+  border-radius: 8px;
+  overflow: hidden;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+}
+
+.form-navigation button {
+  flex: 1;
+  padding: 0.8rem 0.5rem;
+  background-color: #f8fafc;
+  color: #64748b;
+  border: none;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.3s;
+  border-bottom: 2px solid #e2e8f0;
+}
+
+.form-navigation button:hover {
+  background-color: #f1f5f9;
+}
+
+.form-navigation button.active {
+  background-color: #ffffff;
+  color: #3b82f6;
   border-bottom: 2px solid #3b82f6;
-  padding-bottom: 0.5rem;
 }
 
-.form-docente h3 {
-  color: #333333;
+/* Formulario */
+.form-docente {
   margin-top: 1.5rem;
-  margin-bottom: 1rem;
-  border-left: 3px solid #3b82f6;
-  padding-left: 10px;
 }
 
-.form-docente input,
-.form-docente select,
+.form-section {
+  display: none;
+  background-color: #ffffff;
+  padding: 1.5rem;
+  border-radius: 8px;
+  margin-bottom: 1rem;
+}
+
+.form-section.active {
+  display: block;
+  animation: fadeIn 0.3s ease-out;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.form-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 1rem;
+}
+
+.form-group {
+  margin-bottom: 1rem;
+}
+
+.form-group.full-width {
+  grid-column: span 2;
+}
+
+.form-docente label {
+  display: block;
+  margin-bottom: 0.5rem;
+  color: #4b5563;
+  font-weight: 500;
+  font-size: 0.95rem;
+}
+
+.form-docente input, 
+.form-docente select, 
 .form-docente textarea {
   width: 100%;
   padding: 0.8rem;
-  margin-bottom: 1rem;
   border: 1px solid #e2e8f0;
   border-radius: 8px;
   background-color: #f8fafc;
   color: #333333;
+  font-size: 0.95rem;
   transition: border-color 0.3s, box-shadow 0.3s;
 }
 
-.form-docente input:focus,
-.form-docente select:focus,
+.form-docente input:focus, 
+.form-docente select:focus, 
 .form-docente textarea:focus {
   outline: none;
   border-color: #3b82f6;
@@ -47,146 +196,213 @@
 }
 
 .form-docente input[type="file"] {
-  background-color: transparent;
-  color: #333333;
-  padding: 0.5rem;
+  background-color: #f8fafc;
+  padding: 0.6rem;
   border: 1px dashed #cbd5e1;
 }
 
-.form-docente label {
-  display: block;
-  margin-bottom: 0.5rem;
-  color: #333333;
-  font-weight: 500;
-}
-
-.form-docente button {
-  width: 100%;
-  padding: 0.8rem;
-  background-color: #3b82f6;
-  color: white;
-  border: none;
-  border-radius: 8px;
-  font-weight: 500;
-  cursor: pointer;
-  transition: background 0.3s ease, transform 0.2s;
-}
-
-.form-docente button:hover {
-  background-color: #2563eb;
-  transform: translateY(-2px);
-}
-
-.form-docente button:active {
-  transform: translateY(1px);
-}
-
-.form-docente button[type="button"] {
-  background-color: #4ade80;
-  margin-bottom: 1.5rem;
-}
-
-.form-docente button[type="button"]:hover {
-  background-color: #22c55e;
-}
-
-.form-docente div {
-  padding: 1rem;
-  background-color: #f1f5f9;
-  border-radius: 8px;
-  margin-bottom: 1rem;
-  border-left: 3px solid #3b82f6;
-}
-
-/* Para mostrar información sobre campos requeridos */
-.form-docente .required::after {
+.required::after {
   content: " *";
   color: #ef4444;
 }
 
-/* Para mostrar mensajes de validación */
-.form-docente .error-message {
-  color: #ef4444;
-  font-size: 0.875rem;
-  margin-top: -0.5rem;
-  margin-bottom: 0.5rem;
-}
-
-/* Para mejorar la legibilidad del textarea */
 .form-docente textarea {
   min-height: 100px;
   resize: vertical;
 }
 
-/* Estilo para agrupar campos relacionados */
-.form-docente .field-group {
-  border-bottom: 1px solid #e2e8f0;
-  padding-bottom: 1.5rem;
-  margin-bottom: 1.5rem;
-}
-
-/* Estilos responsivos */
-@media (max-width: 768px) {
-  .form-docente {
-    margin: 1rem;
-    padding: 1.5rem;
-  }
-  
-  .form-docente h2 {
-    font-size: 1.5rem;
-  }
-  
-  .form-docente input,
-  .form-docente select,
-  .form-docente textarea,
-  .form-docente button {
-    font-size: 14px;
-  }
-  
-  .form-docente div {
-    padding: 0.75rem;
-  }
-}
-
-/* Estilos para mensajes de éxito/error */
-.form-docente .alert {
-  padding: 0.75rem;
-  border-radius: 8px;
+/* Campos dinámicos */
+.form-docente h3 {
+  color: #333333;
+  margin-top: 2rem;
   margin-bottom: 1rem;
-  font-weight: 500;
+  border-left: 3px solid #3b82f6;
+  padding-left: 10px;
+  font-size: 1.2rem;
 }
 
-.form-docente .alert-success {
+.dynamic-field {
+  background-color: #f8fafc;
+  border-radius: 8px;
+  padding: 1rem;
+  margin-bottom: 1rem;
+  border: 1px solid #e2e8f0;
+}
+
+.dynamic-field-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1rem;
+  padding-bottom: 0.5rem;
+  border-bottom: 1px solid #e2e8f0;
+  font-weight: 500;
+  color: #3b82f6;
+}
+
+.remove-btn {
+  background-color: #fee2e2;
+  color: #b91c1c;
+  border: none;
+  border-radius: 4px;
+  padding: 0.3rem 0.6rem;
+  font-size: 0.75rem;
+  cursor: pointer;
+  transition: background-color 0.3s;
+}
+
+.remove-btn:hover {
+  background-color: #fecaca;
+}
+
+/* Botones de navegación */
+.form-navigation-buttons {
+  display: flex;
+  justify-content: space-between;
+  margin-top: 1.5rem;
+  padding-top: 1rem;
+  border-top: 1px solid #f1f5f9;
+}
+
+.prev-btn, .next-btn {
+  padding: 0.7rem 1.2rem;
+  border-radius: 6px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.3s;
+}
+
+.prev-btn {
+  background-color: #f1f5f9;
+  color: #64748b;
+  border: 1px solid #e2e8f0;
+}
+
+.prev-btn:hover {
+  background-color: #e2e8f0;
+}
+
+.next-btn {
+  background-color: #3b82f6;
+  color: white;
+  border: none;
+}
+
+.next-btn:hover {
+  background-color: #2563eb;
+  transform: translateY(-2px);
+}
+
+.submit-btn {
+  background-color: #10b981;
+  color: white;
+  border: none;
+  padding: 0.8rem 1.5rem;
+  border-radius: 6px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.3s, transform 0.2s;
+}
+
+.submit-btn:hover {
+  background-color: #059669;
+  transform: translateY(-2px);
+}
+
+.add-btn {
+  width: 100%;
+  padding: 0.7rem;
+  background-color: #dbeafe;
+  color: #2563eb;
+  border: 1px dashed #93c5fd;
+  border-radius: 6px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.3s;
+  margin-bottom: 2rem;
+}
+
+.add-btn:hover {
+  background-color: #bfdbfe;
+  transform: translateY(-2px);
+}
+
+/* Alertas */
+.alert {
+  padding: 1rem;
+  border-radius: 8px;
+  margin-bottom: 1.5rem;
+  font-weight: 500;
+  text-align: center;
+}
+
+.alert-success {
   background-color: #dcfce7;
   color: #166534;
   border-left: 4px solid #22c55e;
 }
 
-.form-docente .alert-error {
+.alert-error {
   background-color: #fee2e2;
   color: #b91c1c;
   border-left: 4px solid #ef4444;
 }
 
-/* Estilo para mostrar el progreso de carga */
-.form-docente .loading-indicator {
+/* Indicador de carga */
+.loading-indicator {
   display: flex;
   justify-content: center;
   align-items: center;
-  margin: 1rem 0;
+  padding: 0.8rem;
+  background-color: #f8fafc;
+  border-radius: 6px;
+  border: 1px solid #e2e8f0;
 }
 
-.form-docente .loading-indicator .spinner {
+.spinner {
   border: 3px solid #e2e8f0;
   border-top: 3px solid #3b82f6;
   border-radius: 50%;
-  width: 24px;
-  height: 24px;
+  width: 20px;
+  height: 20px;
   animation: spin 1s linear infinite;
-  margin-right: 0.5rem;
+  margin-right: 0.8rem;
 }
 
 @keyframes spin {
   0% { transform: rotate(0deg); }
   100% { transform: rotate(360deg); }
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .formulario-header {
+    flex-direction: column;
+  }
+
+  .foto-preview {
+    margin-right: 0;
+    margin-bottom: 1.5rem;
+  }
+
+  .formulario-header h2 {
+    font-size: 1.5rem;
+  }
+
+  .form-grid {
+    grid-template-columns: 1fr;
+  }
+  
+  .form-group.full-width {
+    grid-column: auto;
+  }
+
+  .form-navigation {
+    flex-wrap: wrap;
+  }
+
+  .form-navigation button {
+    flex: 1 0 50%;
+    font-size: 0.85rem;
+  }
 }

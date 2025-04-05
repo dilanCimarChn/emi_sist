@@ -21,9 +21,32 @@ const FormularioDocente = ({ onFormSuccess }) => {
 
   useEffect(() => {
     const id = localStorage.getItem('usuario_id');
+    const token = localStorage.getItem('authToken');
     if (!id) return navigate('/');
+  
     setFormData(prev => ({ ...prev, usuario_id: id }));
-  }, [navigate]);
+  
+    fetch(`http://localhost:5000/api/docentes/usuario/${id}`, {
+      headers: {
+        Authorization: `Bearer ${token}`
+      }
+    })
+      .then(res => {
+        if (res.status === 401) throw new Error("No autorizado");
+        return res.json();
+      })
+      .then(data => {
+        if (data?.docente) {
+          if (onFormSuccess) {
+            onFormSuccess();
+          } else {
+            alert('Ya completaste el formulario. Serás redirigido.');
+            navigate('/docente');
+          }
+        }
+      })
+      .catch(err => console.error(err));
+  }, [navigate, onFormSuccess]);
 
   const handleChange = e => {
     const { name, value } = e.target;
@@ -63,26 +86,54 @@ const FormularioDocente = ({ onFormSuccess }) => {
     setList(updated);
   };
 
+  const changeSection = (section) => {
+    setActiveSection(section);
+  };
+
   const handleSubmit = async e => {
     e.preventDefault();
-    setMensaje({ texto: '', tipo: '' });
     setLoading(true);
+    setMensaje({ texto: '', tipo: '' });
 
     const data = new FormData();
+    
+    // Datos básicos del docente
     Object.entries(formData).forEach(([key, value]) => data.append(key, value));
+    
+    // Foto de perfil
     if (fotografia) data.append('fotografia', fotografia);
 
-    const appendItems = (items, tipo) => {
-      items.forEach((item, i) => {
-        data.append(`${tipo}[${i}][anio]`, item.anio);
-        data.append(`${tipo}[${i}][universidad]`, item.universidad);
-        if (item.certificado) data.append(`${tipo}[${i}][certificado]`, item.certificado);
-      });
-    };
+    // Añadir archivos de certificados por separado
+    diplomados.forEach((item, i) => {
+      if (item.certificado) {
+        data.append(`diplomados[${i}][certificado]`, item.certificado);
+      }
+    });
+    
+    maestrias.forEach((item, i) => {
+      if (item.certificado) {
+        data.append(`maestrias[${i}][certificado]`, item.certificado);
+      }
+    });
+    
+    phds.forEach((item, i) => {
+      if (item.certificado) {
+        data.append(`phds[${i}][certificado]`, item.certificado);
+      }
+    });
 
-    appendItems(diplomados, 'diplomados');
-    appendItems(maestrias, 'maestrias');
-    appendItems(phds, 'phds');
+    // Enviar arrays como string JSON (para el backend)
+    data.append("diplomados", JSON.stringify(
+      diplomados.map(({ anio, universidad }) => ({ anio, universidad }))
+    ));
+    
+    data.append("maestrias", JSON.stringify(
+      maestrias.map(({ anio, universidad }) => ({ anio, universidad }))
+    ));
+    
+    data.append("phds", JSON.stringify(
+      phds.map(({ anio, universidad }) => ({ anio, universidad }))
+    ));
 
     try {
       const token = localStorage.getItem('authToken');
@@ -106,6 +157,8 @@ const FormularioDocente = ({ onFormSuccess }) => {
         setTimeout(() => {
           if (onFormSuccess && typeof onFormSuccess === 'function') {
             onFormSuccess();
+          } else {
+            navigate('/docente');
           }
         }, 1500);
       } else {
@@ -123,10 +176,6 @@ const FormularioDocente = ({ onFormSuccess }) => {
     } finally {
       setLoading(false);
     }
-  };
-
-  const changeSection = (section) => {
-    setActiveSection(section);
   };
 
   return (
@@ -200,19 +249,41 @@ const FormularioDocente = ({ onFormSuccess }) => {
           <div className="form-grid">
             <div className="form-group">
               <label className="required">Nombres</label>
-              <input type="text" name="nombres" placeholder="Nombres" onChange={handleChange} required />
+              <input 
+                type="text" 
+                name="nombres" 
+                placeholder="Nombres" 
+                onChange={handleChange} 
+                required 
+              />
             </div>
             <div className="form-group">
               <label className="required">Apellidos</label>
-              <input type="text" name="apellidos" placeholder="Apellidos" onChange={handleChange} required />
+              <input 
+                type="text" 
+                name="apellidos" 
+                placeholder="Apellidos" 
+                onChange={handleChange} 
+                required 
+              />
             </div>
             <div className="form-group">
               <label className="required">CI</label>
-              <input type="text" name="ci" placeholder="Cédula de Identidad" onChange={handleChange} required />
+              <input 
+                type="text" 
+                name="ci" 
+                placeholder="Cédula de Identidad" 
+                onChange={handleChange} 
+                required 
+              />
             </div>
             <div className="form-group">
               <label className="required">Género</label>
-              <select name="genero" onChange={handleChange} required>
+              <select 
+                name="genero" 
+                onChange={handleChange} 
+                required
+              >
                 <option value="">Seleccione género</option>
                 <option value="masculino">Masculino</option>
                 <option value="femenino">Femenino</option>
@@ -221,11 +292,21 @@ const FormularioDocente = ({ onFormSuccess }) => {
             </div>
             <div className="form-group full-width">
               <label className="required">Correo electrónico</label>
-              <input type="email" name="correo_electronico" placeholder="ejemplo@dominio.com" onChange={handleChange} required />
+              <input 
+                type="email" 
+                name="correo_electronico" 
+                placeholder="ejemplo@dominio.com" 
+                onChange={handleChange} 
+                required 
+              />
             </div>
           </div>
           <div className="form-navigation-buttons">
-            <button type="button" className="next-btn" onClick={() => changeSection('academica')}>
+            <button 
+              type="button" 
+              className="next-btn" 
+              onClick={() => changeSection('academica')}
+            >
               Siguiente: Formación Académica
             </button>
           </div>
@@ -236,26 +317,58 @@ const FormularioDocente = ({ onFormSuccess }) => {
           <div className="form-grid">
             <div className="form-group">
               <label className="required">Grado académico</label>
-              <input type="text" name="grado_academico" placeholder="Ej: Licenciado, Ingeniero" onChange={handleChange} required />
+              <input 
+                type="text" 
+                name="grado_academico" 
+                placeholder="Ej: Licenciado, Ingeniero" 
+                onChange={handleChange} 
+                required 
+              />
             </div>
             <div className="form-group">
               <label className="required">Título</label>
-              <input type="text" name="titulo" placeholder="Título" onChange={handleChange} required />
+              <input 
+                type="text" 
+                name="titulo" 
+                placeholder="Título" 
+                onChange={handleChange} 
+                required 
+              />
             </div>
             <div className="form-group">
               <label className="required">Año de Titulación</label>
-              <input type="number" name="anio_titulacion" placeholder="Año" onChange={handleChange} required />
+              <input 
+                type="number" 
+                name="anio_titulacion" 
+                placeholder="Año" 
+                onChange={handleChange} 
+                required 
+              />
             </div>
             <div className="form-group">
               <label className="required">Universidad</label>
-              <input type="text" name="universidad" placeholder="Universidad" onChange={handleChange} required />
+              <input 
+                type="text" 
+                name="universidad" 
+                placeholder="Universidad" 
+                onChange={handleChange} 
+                required 
+              />
             </div>
           </div>
           <div className="form-navigation-buttons">
-            <button type="button" className="prev-btn" onClick={() => changeSection('personal')}>
+            <button 
+              type="button" 
+              className="prev-btn" 
+              onClick={() => changeSection('personal')}
+            >
               Anterior
             </button>
-            <button type="button" className="next-btn" onClick={() => changeSection('experiencia')}>
+            <button 
+              type="button" 
+              className="next-btn" 
+              onClick={() => changeSection('experiencia')}
+            >
               Siguiente: Experiencia
             </button>
           </div>
@@ -266,30 +379,66 @@ const FormularioDocente = ({ onFormSuccess }) => {
           <div className="form-grid">
             <div className="form-group">
               <label className="required">Experiencia laboral (años)</label>
-              <input type="number" name="experiencia_laboral" placeholder="Años" onChange={handleChange} required />
+              <input 
+                type="number" 
+                name="experiencia_laboral" 
+                placeholder="Años" 
+                onChange={handleChange} 
+                required 
+              />
             </div>
             <div className="form-group">
               <label className="required">Experiencia docente (años)</label>
-              <input type="number" name="experiencia_docente" placeholder="Años" onChange={handleChange} required />
+              <input 
+                type="number" 
+                name="experiencia_docente" 
+                placeholder="Años" 
+                onChange={handleChange} 
+                required 
+              />
             </div>
             <div className="form-group">
               <label className="required">Categoría docente</label>
-              <input type="text" name="categoria_docente" placeholder="Categoría" onChange={handleChange} required />
+              <input 
+                type="text" 
+                name="categoria_docente" 
+                placeholder="Categoría" 
+                onChange={handleChange} 
+                required 
+              />
             </div>
             <div className="form-group">
               <label className="required">Modalidad de ingreso</label>
-              <input type="text" name="modalidad_ingreso" placeholder="Modalidad" onChange={handleChange} required />
+              <input 
+                type="text" 
+                name="modalidad_ingreso" 
+                placeholder="Modalidad" 
+                onChange={handleChange} 
+                required 
+              />
             </div>
             <div className="form-group full-width">
               <label>Asignaturas que dicta</label>
-              <textarea name="asignaturas" placeholder="Lista de asignaturas" onChange={handleChange} />
+              <textarea 
+                name="asignaturas" 
+                placeholder="Lista de asignaturas (una por línea)" 
+                onChange={handleChange} 
+              />
             </div>
           </div>
           <div className="form-navigation-buttons">
-            <button type="button" className="prev-btn" onClick={() => changeSection('academica')}>
+            <button 
+              type="button" 
+              className="prev-btn" 
+              onClick={() => changeSection('academica')}
+            >
               Anterior
             </button>
-            <button type="button" className="next-btn" onClick={() => changeSection('adicional')}>
+            <button 
+              type="button" 
+              className="next-btn" 
+              onClick={() => changeSection('adicional')}
+            >
               Siguiente: Formación Adicional
             </button>
           </div>
@@ -315,20 +464,46 @@ const FormularioDocente = ({ onFormSuccess }) => {
               <div className="form-grid">
                 <div className="form-group">
                   <label>Universidad</label>
-                  <input type="text" name="universidad" placeholder="Universidad" value={item.universidad} onChange={e => handleDynamicChange(e, i, diplomados, setDiplomados)} />
+                  <input 
+                    type="text" 
+                    name="universidad" 
+                    placeholder="Universidad" 
+                    value={item.universidad || ''}
+                    onChange={e => handleDynamicChange(e, i, diplomados, setDiplomados)} 
+                  />
                 </div>
                 <div className="form-group">
                   <label>Año</label>
-                  <input type="number" name="anio" placeholder="Año" value={item.anio} onChange={e => handleDynamicChange(e, i, diplomados, setDiplomados)} />
+                  <input 
+                    type="number" 
+                    name="anio" 
+                    placeholder="Año" 
+                    value={item.anio || ''}
+                    onChange={e => handleDynamicChange(e, i, diplomados, setDiplomados)} 
+                  />
                 </div>
                 <div className="form-group full-width">
-                  <label>Certificado</label>
-                  <input type="file" name="certificado" onChange={e => handleDynamicChange(e, i, diplomados, setDiplomados)} />
+                  <label>Certificado (opcional)</label>
+                  <input 
+                    type="file" 
+                    name="certificado" 
+                    accept="image/*,application/pdf" 
+                    onChange={e => handleDynamicChange(e, i, diplomados, setDiplomados)} 
+                  />
+                  {item.certificado && (
+                    <div className="file-selected">
+                      {typeof item.certificado === 'string' ? item.certificado : item.certificado.name}
+                    </div>
+                  )}
                 </div>
               </div>
             </div>
           ))}
-          <button type="button" className="add-btn" onClick={() => handleAddField(setDiplomados, diplomados)}>
+          <button 
+            type="button" 
+            className="add-btn" 
+            onClick={() => handleAddField(setDiplomados, diplomados)}
+          >
             + Añadir diplomado
           </button>
 
@@ -350,20 +525,46 @@ const FormularioDocente = ({ onFormSuccess }) => {
               <div className="form-grid">
                 <div className="form-group">
                   <label>Universidad</label>
-                  <input type="text" name="universidad" placeholder="Universidad" value={item.universidad} onChange={e => handleDynamicChange(e, i, maestrias, setMaestrias)} />
+                  <input 
+                    type="text" 
+                    name="universidad" 
+                    placeholder="Universidad" 
+                    value={item.universidad || ''}
+                    onChange={e => handleDynamicChange(e, i, maestrias, setMaestrias)} 
+                  />
                 </div>
                 <div className="form-group">
                   <label>Año</label>
-                  <input type="number" name="anio" placeholder="Año" value={item.anio} onChange={e => handleDynamicChange(e, i, maestrias, setMaestrias)} />
+                  <input 
+                    type="number" 
+                    name="anio" 
+                    placeholder="Año" 
+                    value={item.anio || ''}
+                    onChange={e => handleDynamicChange(e, i, maestrias, setMaestrias)} 
+                  />
                 </div>
                 <div className="form-group full-width">
-                  <label>Certificado</label>
-                  <input type="file" name="certificado" onChange={e => handleDynamicChange(e, i, maestrias, setMaestrias)} />
+                  <label>Certificado (opcional)</label>
+                  <input 
+                    type="file" 
+                    name="certificado" 
+                    accept="image/*,application/pdf" 
+                    onChange={e => handleDynamicChange(e, i, maestrias, setMaestrias)} 
+                  />
+                  {item.certificado && (
+                    <div className="file-selected">
+                      {typeof item.certificado === 'string' ? item.certificado : item.certificado.name}
+                    </div>
+                  )}
                 </div>
               </div>
             </div>
           ))}
-          <button type="button" className="add-btn" onClick={() => handleAddField(setMaestrias, maestrias)}>
+          <button 
+            type="button" 
+            className="add-btn" 
+            onClick={() => handleAddField(setMaestrias, maestrias)}
+          >
             + Añadir maestría
           </button>
 
@@ -385,34 +586,66 @@ const FormularioDocente = ({ onFormSuccess }) => {
               <div className="form-grid">
                 <div className="form-group">
                   <label>Universidad</label>
-                  <input type="text" name="universidad" placeholder="Universidad" value={item.universidad} onChange={e => handleDynamicChange(e, i, phds, setPhds)} />
+                  <input 
+                    type="text" 
+                    name="universidad" 
+                    placeholder="Universidad" 
+                    value={item.universidad || ''}
+                    onChange={e => handleDynamicChange(e, i, phds, setPhds)} 
+                  />
                 </div>
                 <div className="form-group">
                   <label>Año</label>
-                  <input type="number" name="anio" placeholder="Año" value={item.anio} onChange={e => handleDynamicChange(e, i, phds, setPhds)} />
+                  <input 
+                    type="number" 
+                    name="anio" 
+                    placeholder="Año" 
+                    value={item.anio || ''}
+                    onChange={e => handleDynamicChange(e, i, phds, setPhds)} 
+                  />
                 </div>
                 <div className="form-group full-width">
-                  <label>Certificado</label>
-                  <input type="file" name="certificado" onChange={e => handleDynamicChange(e, i, phds, setPhds)} />
+                  <label>Certificado (opcional)</label>
+                  <input 
+                    type="file" 
+                    name="certificado" 
+                    accept="image/*,application/pdf" 
+                    onChange={e => handleDynamicChange(e, i, phds, setPhds)} 
+                  />
+                  {item.certificado && (
+                    <div className="file-selected">
+                      {typeof item.certificado === 'string' ? item.certificado : item.certificado.name}
+                    </div>
+                  )}
                 </div>
               </div>
             </div>
           ))}
-          <button type="button" className="add-btn" onClick={() => handleAddField(setPhds, phds)}>
+          <button 
+            type="button" 
+            className="add-btn" 
+            onClick={() => handleAddField(setPhds, phds)}
+          >
             + Añadir doctorado
           </button>
 
           <div className="form-navigation-buttons">
-            <button type="button" className="prev-btn" onClick={() => changeSection('experiencia')}>
+            <button 
+              type="button" 
+              className="prev-btn" 
+              onClick={() => changeSection('experiencia')}
+            >
               Anterior
             </button>
             {loading ? (
               <div className="loading-indicator">
                 <div className="spinner"></div>
-                <span>Procesando...</span>
+                <span>Enviando formulario...</span>
               </div>
             ) : (
-              <button type="submit" className="submit-btn">Guardar y Enviar</button>
+              <button type="submit" className="submit-btn">
+                Guardar y Enviar
+              </button>
             )}
           </div>
         </div>

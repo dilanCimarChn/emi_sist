@@ -1,4 +1,4 @@
-/* ResumenDocente.css con estilos de edición */
+/* ResumenDocente.css - Estilo completo */
 .resumen-docente {
     max-width: 1000px;
     margin: 0 auto;
@@ -31,7 +31,7 @@
     border-left: 4px solid #ef4444;
   }
   
-  /* Header con foto de perfil */
+  /* Header con acciones */
   .perfil-header {
     display: flex;
     justify-content: space-between;
@@ -75,13 +75,19 @@
     background-color: #dbeafe;
   }
   
-  .btn-edit.active {
+  .btn-cancel {
     background-color: #fef2f2;
     color: #b91c1c;
-    border-color: #fecaca;
+    border: 1px solid #fecaca;
+    padding: 0.5rem 1rem;
+    border-radius: 6px;
+    font-size: 0.9rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s;
   }
   
-  .btn-edit.active:hover {
+  .btn-cancel:hover {
     background-color: #fee2e2;
   }
   
@@ -159,12 +165,26 @@
     border: 3px solid #ffffff;
     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
     position: relative;
+    background-color: #f3f4f6;
+    display: flex;
+    justify-content: center;
+    align-items: center;
   }
   
   .perfil-foto {
     width: 100%;
     height: 100%;
     object-fit: cover;
+  }
+  
+  .foto-placeholder {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    width: 100%;
+    height: 100%;
+    color: #9ca3af;
+    font-size: 0.8rem;
   }
   
   .edit-foto {
@@ -404,6 +424,22 @@
     background-color: #bfdbfe;
   }
   
+  .btn-preview-small {
+    background-color: #dbeafe;
+    color: #1d4ed8;
+    border: none;
+    padding: 0.25rem 0.5rem;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 0.75rem;
+    margin-left: 0.5rem;
+    transition: all 0.2s;
+  }
+  
+  .btn-preview-small:hover {
+    background-color: #bfdbfe;
+  }
+  
   .no-data {
     color: #6b7280;
     font-style: italic;
@@ -478,12 +514,24 @@
   }
   
   .certificado-actual {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
     font-size: 0.85rem;
     color: #4b5563;
-    display: block;
     background-color: #f3f4f6;
     padding: 0.4rem 0.6rem;
     border-radius: 4px;
+    margin-bottom: 0.5rem;
+  }
+  
+  .new-file {
+    font-size: 0.85rem;
+    color: #0284c7;
+    background-color: #f0f9ff;
+    padding: 0.4rem 0.6rem;
+    border-radius: 4px;
+    margin-top: 0.3rem;
   }
   
   /* Elementos eliminados */

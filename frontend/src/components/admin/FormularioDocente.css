@@ -1,4 +1,4 @@
-/* FormularioDocente.css - Tema Claro Mejorado */
+/* FormularioDocente.css - Estilo mejorado */
 .formulario-wrapper {
   max-width: 900px;
   margin: 0 auto;
@@ -10,6 +10,28 @@
   position: relative;
 }
 
+/* Alertas */
+.alert {
+  padding: 1rem;
+  margin-bottom: 1.5rem;
+  border-radius: 8px;
+  text-align: center;
+  font-weight: 500;
+}
+
+.alert-success {
+  background-color: #dcfce7;
+  color: #166534;
+  border-left: 4px solid #22c55e;
+}
+
+.alert-error {
+  background-color: #fee2e2;
+  color: #b91c1c;
+  border-left: 4px solid #ef4444;
+}
+
+/* Cabecera de formulario con foto */
 .formulario-header {
   display: flex;
   align-items: center;
@@ -129,7 +151,7 @@
   border-bottom: 2px solid #3b82f6;
 }
 
-/* Formulario */
+/* Formulario principal */
 .form-docente {
   margin-top: 1.5rem;
 }
@@ -166,7 +188,12 @@
   grid-column: span 2;
 }
 
-.form-docente label {
+.required::after {
+  content: " *";
+  color: #ef4444;
+}
+
+.form-group label {
   display: block;
   margin-bottom: 0.5rem;
   color: #4b5563;
@@ -174,9 +201,9 @@
   font-size: 0.95rem;
 }
 
-.form-docente input, 
-.form-docente select, 
-.form-docente textarea {
+.form-group input, 
+.form-group select, 
+.form-group textarea {
   width: 100%;
   padding: 0.8rem;
   border: 1px solid #e2e8f0;
@@ -187,31 +214,36 @@
   transition: border-color 0.3s, box-shadow 0.3s;
 }
 
-.form-docente input:focus, 
-.form-docente select:focus, 
-.form-docente textarea:focus {
+.form-group input:focus, 
+.form-group select:focus, 
+.form-group textarea:focus {
   outline: none;
   border-color: #3b82f6;
   box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.2);
 }
 
-.form-docente input[type="file"] {
+.form-group input[type="file"] {
   background-color: #f8fafc;
   padding: 0.6rem;
   border: 1px dashed #cbd5e1;
 }
 
-.required::after {
-  content: " *";
-  color: #ef4444;
-}
-
-.form-docente textarea {
+.form-group textarea {
   min-height: 100px;
   resize: vertical;
 }
 
-/* Campos dinámicos */
+.file-selected {
+  margin-top: 0.5rem;
+  font-size: 0.85rem;
+  color: #0284c7;
+  background-color: #f0f9ff;
+  padding: 0.4rem 0.6rem;
+  border-radius: 4px;
+  display: inline-block;
+}
+
+/* Campos dinámicos (diplomados, maestrías, etc) */
 .form-docente h3 {
   color: #333333;
   margin-top: 2rem;
@@ -235,27 +267,49 @@
   align-items: center;
   margin-bottom: 1rem;
   padding-bottom: 0.5rem;
-  border-bottom: 1px solid #e2e8f0;
-  font-weight: 500;
+  border-bottom: 1px solid #e5e7eb;
+}
+
+.dynamic-field-header span {
+  font-weight: 600;
   color: #3b82f6;
 }
 
 .remove-btn {
-  background-color: #fee2e2;
+  background-color: #fef2f2;
   color: #b91c1c;
-  border: none;
-  border-radius: 4px;
+  border: 1px solid #fecaca;
   padding: 0.3rem 0.6rem;
-  font-size: 0.75rem;
+  border-radius: 6px;
+  font-size: 0.8rem;
   cursor: pointer;
   transition: background-color 0.3s;
 }
 
 .remove-btn:hover {
-  background-color: #fecaca;
+  background-color: #fee2e2;
 }
 
-/* Botones de navegación */
+/* Botones de agregar campos */
+.add-btn {
+  width: 100%;
+  padding: 0.7rem;
+  background-color: #dbeafe;
+  color: #2563eb;
+  border: 1px dashed #93c5fd;
+  border-radius: 6px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.3s;
+  margin-bottom: 2rem;
+}
+
+.add-btn:hover {
+  background-color: #bfdbfe;
+  transform: translateY(-2px);
+}
+
+/* Botones de navegación entre secciones */
 .form-navigation-buttons {
   display: flex;
   justify-content: space-between;
@@ -301,51 +355,12 @@
   border-radius: 6px;
   font-weight: 600;
   cursor: pointer;
-  transition: background 0.3s, transform 0.2s;
+  transition: all 0.3s;
 }
 
 .submit-btn:hover {
   background-color: #059669;
   transform: translateY(-2px);
-}
-
-.add-btn {
-  width: 100%;
-  padding: 0.7rem;
-  background-color: #dbeafe;
-  color: #2563eb;
-  border: 1px dashed #93c5fd;
-  border-radius: 6px;
-  font-weight: 500;
-  cursor: pointer;
-  transition: all 0.3s;
-  margin-bottom: 2rem;
-}
-
-.add-btn:hover {
-  background-color: #bfdbfe;
-  transform: translateY(-2px);
-}
-
-/* Alertas */
-.alert {
-  padding: 1rem;
-  border-radius: 8px;
-  margin-bottom: 1.5rem;
-  font-weight: 500;
-  text-align: center;
-}
-
-.alert-success {
-  background-color: #dcfce7;
-  color: #166534;
-  border-left: 4px solid #22c55e;
-}
-
-.alert-error {
-  background-color: #fee2e2;
-  color: #b91c1c;
-  border-left: 4px solid #ef4444;
 }
 
 /* Indicador de carga */
@@ -379,16 +394,16 @@
   .formulario-header {
     flex-direction: column;
   }
-
+  
   .foto-preview {
     margin-right: 0;
     margin-bottom: 1.5rem;
   }
-
+  
   .formulario-header h2 {
     font-size: 1.5rem;
   }
-
+  
   .form-grid {
     grid-template-columns: 1fr;
   }
@@ -396,13 +411,22 @@
   .form-group.full-width {
     grid-column: auto;
   }
-
+  
   .form-navigation {
     flex-wrap: wrap;
   }
-
+  
   .form-navigation button {
     flex: 1 0 50%;
     font-size: 0.85rem;
+  }
+  
+  .form-navigation-buttons {
+    flex-direction: column;
+    gap: 1rem;
+  }
+  
+  .prev-btn, .next-btn, .submit-btn {
+    width: 100%;
   }
 }

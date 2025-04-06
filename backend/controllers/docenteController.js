@@ -1,7 +1,6 @@
-// backend/controllers/docenteController.js
 const pool = require('../db');
 
-// 👉 CREAR DOCENTE
+// ✅ Crear Docente con estudios como arrays
 const crearDocente = async (req, res) => {
   const client = await pool.connect();
 
@@ -45,39 +44,32 @@ const crearDocente = async (req, res) => {
     const docenteId = result.rows[0]?.id;
     if (!docenteId) throw new Error('No se obtuvo ID del docente insertado');
 
-    // 🧠 Extraer estudios
     const estudios = [];
-    const extraerEstudios = (prefix, tipo) => {
-      Object.keys(req.body).forEach(key => {
-        const match = key.match(new RegExp(`${prefix}\\[(\\d+)\\]\\[(\\w+)\\]`));
-        if (match) {
-          const [, index, field] = match;
-          if (!estudios[index]) estudios[index] = { tipo };
-          estudios[index][field] = req.body[key];
-        }
+
+    const parseEstudios = (tipo, bodyField) => {
+      const array = JSON.parse(req.body[bodyField] || '[]');
+      array.forEach((item, i) => {
+        estudios.push({
+          tipo,
+          universidad: item.universidad,
+          anio: parseInt(item.anio),
+          certificado: req.files?.[`${bodyField}[${i}][certificado]`]?.[0]?.filename || null
+        });
       });
     };
 
-    extraerEstudios('diplomados', 'diplomado');
-    extraerEstudios('maestrias', 'maestria');
-    extraerEstudios('phds', 'phd');
+    parseEstudios('diplomado', 'diplomados');
+    parseEstudios('maestria', 'maestrias');
+    parseEstudios('phd', 'phds');
 
-    const files = req.files || {};
-    Object.keys(files).forEach(field => {
-      const match = field.match(/(diplomados|maestrias|phds)\[(\d+)\]\[certificado\]/);
-      if (match) {
-        const index = parseInt(match[2]);
-        if (!estudios[index]) estudios[index] = {};
-        estudios[index].certificado = files[field][0]?.filename || null;
-      }
-    });
+    console.log("🧾 Estudios final procesados:", estudios);
 
     for (const est of estudios) {
-      if (est && est.universidad && est.anio) {
+      if (est.universidad && est.anio) {
         await client.query(
           `INSERT INTO estudios (docente_id, tipo, universidad, anio, certificado)
            VALUES ($1, $2, $3, $4, $5)`,
-          [docenteId, est.tipo, est.universidad, est.anio, est.certificado || null]
+          [docenteId, est.tipo, est.universidad, est.anio, est.certificado]
         );
       }
     }
@@ -97,7 +89,7 @@ const crearDocente = async (req, res) => {
   }
 };
 
-// 👉 OBTENER DOCENTE POR USUARIO_ID
+// ✅ Obtener docente por usuario_id
 const obtenerDocentePorUsuarioId = async (req, res) => {
   const { usuarioId } = req.params;
   try {
@@ -113,7 +105,7 @@ const obtenerDocentePorUsuarioId = async (req, res) => {
   }
 };
 
-// 👉 OBTENER DOCENTE POR ID (para vista detallada del admin)
+// ✅ Obtener docente por ID (admin)
 const getDocentePorId = async (req, res) => {
   const { id } = req.params;
 
@@ -125,7 +117,6 @@ const getDocentePorId = async (req, res) => {
 
     const docente = docenteResult.rows[0];
 
-    // Obtener estudios relacionados
     const estudiosResult = await pool.query('SELECT * FROM estudios WHERE docente_id = $1', [id]);
     docente.estudios = estudiosResult.rows;
 
@@ -136,7 +127,7 @@ const getDocentePorId = async (req, res) => {
   }
 };
 
-// Obtener todos los docentes
+// ✅ Obtener todos los docentes
 const getTodosLosDocentes = async (req, res) => {
   try {
     const result = await pool.query('SELECT * FROM docentes ORDER BY id ASC');
@@ -147,6 +138,7 @@ const getTodosLosDocentes = async (req, res) => {
   }
 };
 
+// ✅ Actualizar docente
 const actualizarDocente = async (req, res) => {
   const { id } = req.params;
   const {
@@ -179,13 +171,33 @@ const actualizarDocente = async (req, res) => {
   }
 };
 
+// ✅ NUEVO: Obtener estudios por docente_id
+const obtenerEstudiosPorDocente = async (req, res) => {
+  const { docente_id } = req.params;
 
-// ✅ EXPORTA TODO JUNTO
+  try {
+    const query = `
+      SELECT id, tipo, universidad, anio, certificado
+      FROM estudios
+      WHERE docente_id = $1
+      ORDER BY anio DESC
+    `;
+    const result = await pool.query(query, [docente_id]);
+
+    res.status(200).json(result.rows);
+  } catch (error) {
+    console.error('Error al obtener estudios:', error);
+    res.status(500).json({ error: 'Error al obtener estudios del docente' });
+  }
+};
+
+
+// ✅ Exportación de todos los controladores
 module.exports = {
   crearDocente,
   obtenerDocentePorUsuarioId,
   getDocentePorId,
-
   getTodosLosDocentes,
-  actualizarDocente // 👈 nueva exportación
+  actualizarDocente,
+  obtenerEstudiosPorDocente // 👈 Nuevo export
 };

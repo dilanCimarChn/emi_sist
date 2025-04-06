@@ -6,13 +6,14 @@ const {
   crearDocente,
   obtenerDocentePorUsuarioId,
   getDocentePorId,
-  getTodosLosDocentes // 👈 importante
+  getTodosLosDocentes,
+  actualizarDocente,
+  obtenerEstudiosPorDocente // ✅ Importación agregada
 } = require('../controllers/docenteController');
+
 const { verificarToken, esDocente } = require('../middleware/authMiddleware');
 
-
-
-// Ruta de prueba
+// 🧪 Ruta de prueba
 router.get('/test', (req, res) => {
   res.status(200).json({
     message: 'Ruta /api/docentes/test activa ✅',
@@ -20,7 +21,7 @@ router.get('/test', (req, res) => {
   });
 });
 
-// Campos esperados para multer (fotografía + certificados dinámicos)
+// 📎 Campos esperados para subir con multer (máximo 10 por tipo)
 const fileFields = [{ name: 'fotografia', maxCount: 1 }];
 for (let i = 0; i < 10; i++) {
   fileFields.push({ name: `diplomados[${i}][certificado]`, maxCount: 1 });
@@ -28,7 +29,7 @@ for (let i = 0; i < 10; i++) {
   fileFields.push({ name: `phds[${i}][certificado]`, maxCount: 1 });
 }
 
-// Ruta protegida: Crear nuevo docente
+// 📥 Crear nuevo docente (protegido con auth y multer)
 router.post(
   '/crear',
   verificarToken,
@@ -37,7 +38,7 @@ router.post(
   crearDocente
 );
 
-// Ruta protegida: Obtener docente por usuario_id
+// 🔐 Obtener docente por usuario_id (protegido)
 router.get(
   '/usuario/:usuarioId',
   verificarToken,
@@ -45,12 +46,16 @@ router.get(
   obtenerDocentePorUsuarioId
 );
 
-router.get('/', getTodosLosDocentes); // ✅ Esta debe ir antes de /:id
-// ✅ NUEVA RUTA para obtener un docente por su ID (usada en DetalleDocente.jsx)
+// 📄 Obtener estudios de un docente por su ID (sin protección porque es vista admin)
+router.get('/estudios/:docente_id', obtenerEstudiosPorDocente);
+
+// 📋 Obtener todos los docentes (por admin o para mostrar lista)
+router.get('/', getTodosLosDocentes);
+
+// 🔍 Obtener un docente específico por su ID
 router.get('/:id', getDocentePorId);
 
-module.exports = router;
-
-const { actualizarDocente } = require('../controllers/docenteController');
-
+// ✏️ Actualizar datos del docente
 router.put('/:id', actualizarDocente);
+
+module.exports = router;

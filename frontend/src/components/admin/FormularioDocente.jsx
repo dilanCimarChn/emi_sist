@@ -18,11 +18,20 @@ const FormularioDocente = () => {
 
   useEffect(() => {
     const id = localStorage.getItem('usuario_id');
+    const token = localStorage.getItem('authToken');
     if (!id) return navigate('/');
+  
     setFormData(prev => ({ ...prev, usuario_id: id }));
-
-    fetch(`http://localhost:5000/api/docentes/usuario/${id}`)
-      .then(res => res.json())
+  
+    fetch(`http://localhost:5000/api/docentes/usuario/${id}`, {
+      headers: {
+        Authorization: `Bearer ${token}`
+      }
+    })
+      .then(res => {
+        if (res.status === 401) throw new Error("No autorizado");
+        return res.json();
+      })
       .then(data => {
         if (data?.docente) {
           alert('Ya completaste el formulario. Serás redirigido.');
@@ -31,6 +40,7 @@ const FormularioDocente = () => {
       })
       .catch(err => console.error(err));
   }, []);
+  
 
   const handleChange = e => {
     const { name, value } = e.target;
@@ -56,17 +66,28 @@ const FormularioDocente = () => {
     Object.entries(formData).forEach(([key, value]) => data.append(key, value));
     if (fotografia) data.append('fotografia', fotografia);
 
-    const appendItems = (items, tipo) => {
-      items.forEach((item, i) => {
-        data.append(`${tipo}[${i}][anio]`, item.anio);
-        data.append(`${tipo}[${i}][universidad]`, item.universidad);
-        if (item.certificado) data.append(`${tipo}[${i}][certificado]`, item.certificado);
-      });
-    };
+// ✅ Añadir archivos por separado
+    diplomados.forEach((item, i) => {
+      if (item.certificado) {
+        data.append(`diplomados[${i}][certificado]`, item.certificado);
+      }
+    });
+    maestrias.forEach((item, i) => {
+      if (item.certificado) {
+        data.append(`maestrias[${i}][certificado]`, item.certificado);
+      }
+    });
+    phds.forEach((item, i) => {
+      if (item.certificado) {
+        data.append(`phds[${i}][certificado]`, item.certificado);
+      }
+    });
 
-    appendItems(diplomados, 'diplomados');
-    appendItems(maestrias, 'maestrias');
-    appendItems(phds, 'phds');
+    // ✅ Enviar arrays como string JSON (para el backend)
+    data.append("diplomados", JSON.stringify(diplomados.map(({ anio, universidad }) => ({ anio, universidad }))));
+    data.append("maestrias", JSON.stringify(maestrias.map(({ anio, universidad }) => ({ anio, universidad }))));
+    data.append("phds", JSON.stringify(phds.map(({ anio, universidad }) => ({ anio, universidad }))));
+
 
     try {
         const token = localStorage.getItem('authToken');

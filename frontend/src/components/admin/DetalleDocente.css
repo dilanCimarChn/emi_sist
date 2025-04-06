@@ -302,3 +302,34 @@ h3 {
     width: 100%;
   }
 }
+
+.estudios-docente {
+  margin-top: 20px;
+  background-color: #222;
+  padding: 15px;
+  border-radius: 10px;
+  color: #f1f1f1;
+}
+
+.estudios-docente ul {
+  list-style: none;
+  padding: 0;
+}
+
+.estudios-docente li {
+  margin-bottom: 15px;
+}
+
+.btn-ver-detalles {
+  margin-top: 10px;
+  background-color: #3a3aff;
+  color: white;
+  padding: 10px;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+}
+
+.btn-ver-detalles:hover {
+  background-color: #2a2acc;
+}

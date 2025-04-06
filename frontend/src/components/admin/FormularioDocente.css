@@ -384,20 +384,6 @@
   margin-right: 0.8rem;
 }
 
-.react-select__control {
-  background-color: #f9f9f9;
-  border: 1px solid #ccc;
-  border-radius: 6px;
-  padding: 2px 4px;
-  font-size: 14px;
-  box-shadow: none;
-}
-
-.react-select__menu {
-  z-index: 9999;
-}
-
-
 @keyframes spin {
   0% { transform: rotate(0deg); }
   100% { transform: rotate(360deg); }
@@ -444,4 +430,3 @@
     width: 100%;
   }
 }
-

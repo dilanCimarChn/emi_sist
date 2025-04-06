@@ -33,7 +33,7 @@ exports.login = async (req, res) => {
 
     const user = userResult.rows[0];
 
-    // ⚠️ Comprobación de contraseña en texto plano (temporal, sin encriptar)
+    // ⚠️ Comprobación temporal sin hashing
     const isPasswordValid = contrasena === user.contrasena;
 
     if (!isPasswordValid) {
@@ -50,7 +50,6 @@ exports.login = async (req, res) => {
       { expiresIn: '1h' }
     );
 
-    // ✅ Enviar también el ID del usuario
     res.status(200).json({
       token,
       rol: user.rol,
@@ -72,6 +71,14 @@ exports.solicitarRegistro = async (req, res) => {
   const { nombre, apellidos, correo, contrasena, celular, ci } = req.body;
 
   try {
+    // Validación básica de campos requeridos
+    if (!nombre || !apellidos || !correo || !contrasena || !celular || !ci) {
+      return res.status(400).json({
+        message: "Todos los campos son obligatorios",
+        error: true
+      });
+    }
+
     // Verificar si ya existe en usuarios
     const existeUsuario = await pool.query(
       'SELECT * FROM usuarios WHERE correo = $1',
@@ -111,10 +118,10 @@ exports.solicitarRegistro = async (req, res) => {
       });
     }
 
-    // Insertar solicitud de registro
+    // ✅ Insertar solicitud con estado 'pendiente'
     await pool.query(
-      'INSERT INTO solicitudes_registro (nombre, apellidos, correo, contrasena, celular, ci) VALUES ($1, $2, $3, $4, $5, $6)',
-      [nombre, apellidos, correo, contrasena, celular, ci]
+      'INSERT INTO solicitudes_registro (nombre, apellidos, correo, contrasena, celular, ci, estado) VALUES ($1, $2, $3, $4, $5, $6, $7)',
+      [nombre, apellidos, correo, contrasena, celular, ci, 'pendiente']
     );
 
     res.status(201).json({
@@ -124,8 +131,6 @@ exports.solicitarRegistro = async (req, res) => {
 
   } catch (error) {
     console.error('❌ Error al procesar solicitud:', error);
-    console.error('❌ Error al registrar docente:', error);
-
     res.status(500).json({
       message: "Error al procesar la solicitud",
       errorDetails: error.message,

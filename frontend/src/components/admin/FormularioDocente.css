@@ -186,7 +186,50 @@
   margin-right: 0.5rem;
 }
 
+.react-select__control {
+  background-color: #f9f9f9;
+  border: 1px solid #ccc;
+  border-radius: 6px;
+  padding: 2px 4px;
+  font-size: 14px;
+  box-shadow: none;
+}
+
+.react-select__menu {
+  z-index: 9999;
+}
+
+
 @keyframes spin {
   0% { transform: rotate(0deg); }
   100% { transform: rotate(360deg); }
+}
+
+.react-select__control {
+  background-color: #f9f9f9;
+  border: 1px solid #ccc;
+  border-radius: 6px;
+  padding: 2px 4px;
+  font-size: 14px;
+  box-shadow: none;
+}
+
+.react-select__menu {
+  z-index: 9999;
+}
+
+.react-select__multi-value {
+  background-color: #007bff;
+  color: white;
+  border-radius: 4px;
+  padding: 2px 4px;
+}
+
+.react-select__multi-value__label {
+  color: white;
+}
+
+.react-select__multi-value__remove {
+  color: white;
+  cursor: pointer;
 }

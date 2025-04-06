@@ -16,15 +16,19 @@ const ResumenDocente = () => {
 
     const fetchDatos = async () => {
       try {
-        const res = await axios.get(`http://localhost:5000/api/docentes/usuario/${usuario_id}`, {
+        // 🔁 Primero obtenemos el ID real del docente
+        const resUsuario = await axios.get(`http://localhost:5000/api/docentes/usuario/${usuario_id}`, {
           headers: { Authorization: `Bearer ${token}` }
         });
 
-        if (res.data?.docente) {
-          setDocente(res.data.docente);
-        } else {
-          navigate('/formulario'); // Si no tiene datos, lo mandamos a llenar
+        const docenteData = resUsuario.data?.docente;
+        if (!docenteData?.id) {
+          return navigate('/formulario');
         }
+
+        // 🔁 Luego obtenemos los datos completos por ID (con asignaturas y estudios)
+        const res = await axios.get(`http://localhost:5000/api/docentes/${docenteData.id}`);
+        setDocente(res.data);
       } catch (error) {
         console.error('❌ Error al obtener datos del docente:', error);
         navigate('/');
@@ -52,7 +56,33 @@ const ResumenDocente = () => {
       <p><strong>Experiencia Docente:</strong> {docente.experiencia_docente} años</p>
       <p><strong>Categoría Docente:</strong> {docente.categoria_docente}</p>
       <p><strong>Modalidad de Ingreso:</strong> {docente.modalidad_ingreso}</p>
-      <p><strong>Asignaturas:</strong> {docente.asignaturas}</p>
+
+      <div>
+        <strong>Asignaturas que dicta:</strong>
+        <ul>
+          {docente.asignaturas?.map(asig => (
+            <li key={asig.id}>{asig.nombre}</li>
+          ))}
+        </ul>
+      </div>
+
+      {docente.estudios?.length > 0 && (
+        <div>
+          <h3>Estudios Adicionales</h3>
+          <ul>
+            {docente.estudios.map((est, i) => (
+              <li key={i}>
+                {est.tipo.toUpperCase()} en {est.universidad} ({est.anio}){' '}
+                {est.certificado && (
+                  <a href={`/uploads/${est.certificado}`} target="_blank" rel="noopener noreferrer">
+                    [Certificado]
+                  </a>
+                )}
+              </li>
+            ))}
+          </ul>
+        </div>
+      )}
 
       {docente.fotografia && (
         <div>
@@ -60,8 +90,8 @@ const ResumenDocente = () => {
           <img
             src={`/uploads/${docente.fotografia}`}
             alt="Foto del docente"
+            style={{ maxWidth: '200px', borderRadius: '8px', marginTop: '10px' }}
           />
-
         </div>
       )}
     </div>

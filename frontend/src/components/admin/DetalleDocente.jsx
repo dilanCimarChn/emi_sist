@@ -1,10 +1,27 @@
-// src/components/admin/DetalleDocente.jsx
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import './DetalleDocente.css';
 
 const DetalleDocente = ({ docente }) => {
   const navigate = useNavigate();
+  const [mostrarDetalles, setMostrarDetalles] = useState(false);
+  const [estudios, setEstudios] = useState([]);
+
+  useEffect(() => {
+    const obtenerEstudios = async () => {
+      if (docente && mostrarDetalles) {
+        try {
+          const response = await fetch(`/api/docentes/estudios/${docente.id}`);
+          const data = await response.json();
+          setEstudios(data);
+        } catch (error) {
+          console.error('Error al obtener los estudios:', error);
+        }
+      }
+    };
+
+    obtenerEstudios();
+  }, [docente, mostrarDetalles]);
 
   if (!docente) return null;
 
@@ -27,7 +44,6 @@ const DetalleDocente = ({ docente }) => {
             alt="Foto del docente"
             className="docente-foto"
           />
-
         )}
       </div>
 
@@ -37,6 +53,39 @@ const DetalleDocente = ({ docente }) => {
       >
         Editar información
       </button>
+
+      <button
+        className="btn-ver-detalles"
+        onClick={() => setMostrarDetalles(!mostrarDetalles)}
+      >
+        {mostrarDetalles ? 'Ocultar detalles' : 'Más detalles'}
+      </button>
+
+      {mostrarDetalles && (
+        <div className="estudios-docente">
+          <h3>Estudios Adicionales</h3>
+          {estudios.length > 0 ? (
+            <ul>
+              {estudios.map((estudio) => (
+                <li key={estudio.id}>
+                  <p><strong>Tipo:</strong> {estudio.tipo}</p>
+                  <p><strong>Universidad:</strong> {estudio.universidad}</p>
+                  <p><strong>Año:</strong> {estudio.anio}</p>
+                  <p>
+                    <strong>Certificado:</strong>{' '}
+                    <a href={`/uploads/${estudio.certificado}`} target="_blank" rel="noopener noreferrer">
+                      Ver certificado
+                    </a>
+                  </p>
+                  <hr />
+                </li>
+              ))}
+            </ul>
+          ) : (
+            <p>No se encontraron estudios adicionales.</p>
+          )}
+        </div>
+      )}
     </div>
   );
 };

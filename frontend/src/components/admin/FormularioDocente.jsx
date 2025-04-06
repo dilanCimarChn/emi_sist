@@ -46,7 +46,9 @@ const FormularioDocente = ({ onFormSuccess }) => {
         }
       })
       .catch(err => console.error(err));
+
   }, [navigate, onFormSuccess]);
+
 
   const handleChange = e => {
     const { name, value } = e.target;
@@ -103,37 +105,30 @@ const FormularioDocente = ({ onFormSuccess }) => {
     // Foto de perfil
     if (fotografia) data.append('fotografia', fotografia);
 
-    // Añadir archivos de certificados por separado
     diplomados.forEach((item, i) => {
       if (item.certificado) {
         data.append(`diplomados[${i}][certificado]`, item.certificado);
       }
     });
-    
+
     maestrias.forEach((item, i) => {
       if (item.certificado) {
         data.append(`maestrias[${i}][certificado]`, item.certificado);
       }
     });
-    
+
     phds.forEach((item, i) => {
       if (item.certificado) {
         data.append(`phds[${i}][certificado]`, item.certificado);
       }
     });
 
-    // Enviar arrays como string JSON (para el backend)
-    data.append("diplomados", JSON.stringify(
-      diplomados.map(({ anio, universidad }) => ({ anio, universidad }))
-    ));
-    
-    data.append("maestrias", JSON.stringify(
-      maestrias.map(({ anio, universidad }) => ({ anio, universidad }))
-    ));
-    
-    data.append("phds", JSON.stringify(
-      phds.map(({ anio, universidad }) => ({ anio, universidad }))
-    ));
+    // ✅ Enviar arrays como string JSON (para el backend)
+    data.append("diplomados", JSON.stringify(diplomados.map(({ anio, universidad }) => ({ anio, universidad }))));
+    data.append("maestrias", JSON.stringify(maestrias.map(({ anio, universidad }) => ({ anio, universidad }))));
+    data.append("phds", JSON.stringify(phds.map(({ anio, universidad }) => ({ anio, universidad }))));
+
+
 
     try {
       const token = localStorage.getItem('authToken');

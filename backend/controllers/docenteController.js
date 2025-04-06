@@ -191,7 +191,6 @@ const obtenerEstudiosPorDocente = async (req, res) => {
   }
 };
 
-
 // ✅ Exportación de todos los controladores
 module.exports = {
   crearDocente,

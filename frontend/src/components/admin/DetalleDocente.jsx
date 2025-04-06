@@ -36,7 +36,17 @@ const DetalleDocente = ({ docente }) => {
         <p><strong>Título:</strong> {docente.titulo}</p>
         <p><strong>Universidad:</strong> {docente.universidad}</p>
         <p><strong>Año Titulación:</strong> {docente.anio_titulacion}</p>
-        <p><strong>Asignaturas:</strong> {docente.asignaturas}</p>
+        <p>
+          <strong>Asignaturas:</strong>{' '}
+          {docente.asignaturas && docente.asignaturas.length > 0
+            ? docente.asignaturas.map((asig, i) => (
+                <span key={asig.id}>
+                  {asig.nombre}{i < docente.asignaturas.length - 1 ? ', ' : ''}
+                </span>
+              ))
+            : 'No hay asignaturas registradas'}
+        </p>
+
 
         {docente.fotografia && (
           <img

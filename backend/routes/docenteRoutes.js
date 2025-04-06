@@ -7,9 +7,11 @@ const {
   obtenerDocentePorUsuarioId,
   getDocentePorId,
   getTodosLosDocentes,
-  actualizarDocente
+  actualizarDocente,
+  obtenerEstudiosPorDocente // ✅ Importación agregada
 } = require('../controllers/docenteController');
-const { verificarToken, esAdmin, esDocente } = require('../middleware/authMiddleware');
+
+const { verificarToken, esDocente } = require('../middleware/authMiddleware');
 
 // 🧪 Ruta de prueba
 router.get('/test', (req, res) => {
@@ -27,7 +29,7 @@ for (let i = 0; i < 10; i++) {
   fileFields.push({ name: `phds[${i}][certificado]`, maxCount: 1 });
 }
 
-// 📥 Crear nuevo docente (protegido con multer y auth)
+// 📥 Crear nuevo docente (protegido con auth y multer)
 router.post(
   '/crear',
   verificarToken,
@@ -44,10 +46,13 @@ router.get(
   obtenerDocentePorUsuarioId
 );
 
-// 🧾 Obtener todos los docentes
-router.get('/', getTodosLosDocentes); // ⚠️ Esta debe ir antes de "/:id"
+// 📄 Obtener estudios de un docente por su ID (sin protección porque es vista admin)
+router.get('/estudios/:docente_id', obtenerEstudiosPorDocente);
 
-// 🔍 Obtener un docente por ID
+// 📋 Obtener todos los docentes (por admin o para mostrar lista)
+router.get('/', getTodosLosDocentes);
+
+// 🔍 Obtener un docente específico por su ID
 router.get('/:id', getDocentePorId);
 
 // ✏️ Actualizar datos del docente

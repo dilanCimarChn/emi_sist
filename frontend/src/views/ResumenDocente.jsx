@@ -1,6 +1,5 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import axios from 'axios';
 import './ResumenDocente.css';
 
 const ResumenDocente = () => {
@@ -22,80 +21,86 @@ const ResumenDocente = () => {
   const navigate = useNavigate();
 
   useEffect(() => {
-    const usuario_id = localStorage.getItem('usuario_id');
-    const token = localStorage.getItem('authToken');
+    const fetchData = async () => {
+      const usuario_id = localStorage.getItem('usuario_id');
+      const token = localStorage.getItem('authToken');
 
-    if (!usuario_id || !token) {
-      return navigate('/');
-    }
+      if (!usuario_id || !token) {
+        return navigate('/');
+      }
 
-    const fetchDatos = async () => {
       try {
         setLoading(true);
-        const res = await axios.get(`http://localhost:5000/api/docentes/usuario/${usuario_id}`, {
+        
+        // Obtener datos del docente
+        const res = await fetch(`/api/docentes/usuario/${usuario_id}`, {
           headers: { Authorization: `Bearer ${token}` }
         });
 
-        if (res.data?.docente) {
-          const docenteData = res.data.docente;
-          setDocente(docenteData);
-          
-          // Inicializar datos para edición
-          setEditedData({ ...docenteData });
-          
-          // Obtener estudios si existen
-          if (docenteData.id) {
-            try {
-              const estRes = await axios.get(`http://localhost:5000/api/docentes/${docenteData.id}/estudios`, {
-                headers: { Authorization: `Bearer ${token}` }
-              });
-              
-              if (estRes.data) {
-                // Organizar los estudios por tipo
-                const diplomados = estRes.data.filter(est => est.tipo === 'diplomado') || [];
-                const maestrias = estRes.data.filter(est => est.tipo === 'maestria') || [];
-                const phds = estRes.data.filter(est => est.tipo === 'phd') || [];
-                
-                setEstudios({
-                  diplomados,
-                  maestrias,
-                  phds
-                });
-                
-                // Agregar estudios a los datos editables
-                setEditedData(prev => ({
-                  ...prev,
-                  estudios: {
-                    diplomados,
-                    maestrias,
-                    phds
-                  }
-                }));
-              }
-            } catch (error) {
-              console.error('Error al obtener estudios:', error);
-            }
-          }
-        } else {
-          navigate('/formulario'); // Si no tiene datos, lo mandamos a llenar
+        if (!res.ok) {
+          throw new Error('Error al obtener datos del docente');
         }
+
+        const data = await res.json();
+        
+        if (!data.docente) {
+          navigate('/formulario');
+          return;
+        }
+
+        const docenteData = data.docente;
+        setDocente(docenteData);
+        
+        // Inicializar datos para edición
+        setEditedData({ ...docenteData });
+        
+        // Cargar imagen de perfil si existe
+        if (docenteData.fotografia) {
+          setPhotoPreview(`/uploads/${docenteData.fotografia}`);
+        }
+        
+        // Obtener estudios
+        if (docenteData.id) {
+          const estudiosRes = await fetch(`/api/docentes/estudios/${docenteData.id}`);
+          
+          if (estudiosRes.ok) {
+            const estudiosData = await estudiosRes.json();
+            
+            // Organizar estudios por tipo
+            const diplomados = estudiosData.filter(est => est.tipo === 'diplomado') || [];
+            const maestrias = estudiosData.filter(est => est.tipo === 'maestria') || [];
+            const phds = estudiosData.filter(est => est.tipo === 'phd') || [];
+            
+            setEstudios({
+              diplomados,
+              maestrias,
+              phds
+            });
+          }
+        }
+        
       } catch (error) {
-        console.error('Error al obtener datos del docente:', error);
-        navigate('/');
+        console.error('Error al cargar datos:', error);
+        setMessage({
+          text: 'Error al cargar los datos del perfil',
+          type: 'error'
+        });
       } finally {
         setLoading(false);
       }
     };
 
-    fetchDatos();
+    fetchData();
   }, [navigate]);
 
   const handleTabChange = (tab) => {
     setActiveTab(tab);
   };
 
-  const handlePreviewCertificado = (url) => {
-    setCertificadoPreview(url);
+  const handlePreviewCertificado = (certificado) => {
+    if (certificado) {
+      setCertificadoPreview(`/uploads/${certificado}`);
+    }
   };
 
   const closePreview = () => {
@@ -104,13 +109,21 @@ const ResumenDocente = () => {
 
   const toggleEditMode = () => {
     if (editMode) {
-      // Si estamos saliendo del modo edición, descartamos los cambios
-      setEditedData({...docente, estudios});
-      setPhotoPreview(null);
+      // Si estamos saliendo del modo edición, descartar cambios
+      setEditedData({...docente});
+      setPhotoPreview(docente.fotografia ? `/uploads/${docente.fotografia}` : null);
       setNewPhoto(null);
-    } else {
-      // Si estamos entrando en modo edición, aseguramos que editedData tenga los datos actuales
-      setEditedData({...docente, estudios});
+      
+      // Restaurar estudios a su estado original
+      const diplomados = estudios.diplomados.map(est => ({...est}));
+      const maestrias = estudios.maestrias.map(est => ({...est}));
+      const phds = estudios.phds.map(est => ({...est}));
+      
+      setEstudios({
+        diplomados,
+        maestrias,
+        phds
+      });
     }
     setEditMode(!editMode);
     setMessage({ text: '', type: '' });
@@ -129,7 +142,7 @@ const ResumenDocente = () => {
     if (file) {
       setNewPhoto(file);
       
-      // Crear preview
+      // Crear vista previa
       const reader = new FileReader();
       reader.onloadend = () => {
         setPhotoPreview(reader.result);
@@ -141,43 +154,42 @@ const ResumenDocente = () => {
   const handleCertificadoChange = (e, tipo, index) => {
     const file = e.target.files[0];
     if (file) {
-      // Crear una copia del arreglo a modificar
-      const updatedArray = [...editedData.estudios[tipo]];
+      // Crear una copia del arreglo
+      const updatedArray = [...estudios[tipo]];
       updatedArray[index].newCertificado = file;
       updatedArray[index].certificadoChanged = true;
       
-      // Actualizar el estado
-      setEditedData(prev => ({
+      // Actualizar estado
+      setEstudios(prev => ({
         ...prev,
-        estudios: {
-          ...prev.estudios,
-          [tipo]: updatedArray
-        }
+        [tipo]: updatedArray
       }));
     }
   };
 
   const addFormacion = (tipo) => {
-    // Agregar nueva formación (inicialmente vacía)
+    // Determinar el tipo correcto para el backend
+    const tipoBackend = tipo === 'diplomados' ? 'diplomado' : 
+                       tipo === 'maestrias' ? 'maestria' : 'phd';
+    
+    // Crear nuevo elemento
     const newItem = { 
-      tipo: tipo === 'diplomados' ? 'diplomado' : tipo === 'maestrias' ? 'maestria' : 'phd',
-      anio: '', 
+      tipo: tipoBackend,
       universidad: '', 
+      anio: '', 
       certificado: null, 
       isNew: true 
     };
     
-    setEditedData(prev => ({
+    // Actualizar estado
+    setEstudios(prev => ({
       ...prev,
-      estudios: {
-        ...prev.estudios,
-        [tipo]: [...prev.estudios[tipo], newItem]
-      }
+      [tipo]: [...prev[tipo], newItem]
     }));
   };
 
   const removeFormacion = (tipo, index) => {
-    const updatedArray = [...editedData.estudios[tipo]];
+    const updatedArray = [...estudios[tipo]];
     
     // Si es un elemento nuevo, simplemente lo removemos
     if (updatedArray[index].isNew) {
@@ -187,39 +199,30 @@ const ResumenDocente = () => {
       updatedArray[index].toDelete = true;
     }
     
-    setEditedData(prev => ({
+    setEstudios(prev => ({
       ...prev,
-      estudios: {
-        ...prev.estudios,
-        [tipo]: updatedArray
-      }
+      [tipo]: updatedArray
     }));
   };
 
   const undoRemoveFormacion = (tipo, index) => {
-    const updatedArray = [...editedData.estudios[tipo]];
+    const updatedArray = [...estudios[tipo]];
     updatedArray[index].toDelete = false;
     
-    setEditedData(prev => ({
+    setEstudios(prev => ({
       ...prev,
-      estudios: {
-        ...prev.estudios,
-        [tipo]: updatedArray
-      }
+      [tipo]: updatedArray
     }));
   };
 
   const handleFormacionChange = (e, tipo, index, field) => {
     const { value } = e.target;
-    const updatedArray = [...editedData.estudios[tipo]];
+    const updatedArray = [...estudios[tipo]];
     updatedArray[index][field] = value;
     
-    setEditedData(prev => ({
+    setEstudios(prev => ({
       ...prev,
-      estudios: {
-        ...prev.estudios,
-        [tipo]: updatedArray
-      }
+      [tipo]: updatedArray
     }));
   };
 
@@ -245,43 +248,44 @@ const ResumenDocente = () => {
         }
       });
       
-      // Si hay nueva foto, la agregamos
+      // Foto de perfil
       if (newPhoto) {
         data.append('fotografia', newPhoto);
       } else if (docente.fotografia) {
-        // Mantener la fotografía actual
         data.append('fotografia_actual', docente.fotografia);
       }
       
-      // Procesar cambios en estudios
+      // Procesar formaciones (diplomados, maestrías, phds)
       ['diplomados', 'maestrias', 'phds'].forEach(tipo => {
-        if (editedData.estudios && editedData.estudios[tipo] && editedData.estudios[tipo].length > 0) {
-          // Filtrar elementos para guardar (sin los marcados para eliminar)
-          const itemsToSave = editedData.estudios[tipo].filter(item => !item.toDelete);
+        if (estudios[tipo] && estudios[tipo].length > 0) {
+          // Filtrar elementos no marcados para eliminar
+          const items = estudios[tipo].filter(item => !item.toDelete);
           
-          // Pasar información de estudios existentes y nuevos
-          itemsToSave.forEach((item, i) => {
-            // Para todos los items enviamos universidad y año
+          // Para cada formación, agregar sus datos
+          items.forEach((item, i) => {
+            // Tipo de formación para el backend
+            const tipoBackend = tipo === 'diplomados' ? 'diplomado' : 
+                               tipo === 'maestrias' ? 'maestria' : 'phd';
+            
+            data.append(`estudios[${tipo}][${i}][tipo]`, tipoBackend);
             data.append(`estudios[${tipo}][${i}][universidad]`, item.universidad || '');
             data.append(`estudios[${tipo}][${i}][anio]`, item.anio || '');
-            data.append(`estudios[${tipo}][${i}][tipo]`, item.tipo);
             
-            // Si es un item existente, enviamos su ID
+            // Si es un item existente, agregar su ID
             if (item.id) {
               data.append(`estudios[${tipo}][${i}][id]`, item.id);
             }
             
-            // Si hay certificado nuevo, lo enviamos
+            // Si hay certificado nuevo o existente
             if (item.newCertificado) {
               data.append(`estudios[${tipo}][${i}][certificado]`, item.newCertificado);
             } else if (item.certificado && !item.certificadoChanged) {
-              // Conservar certificado existente
               data.append(`estudios[${tipo}][${i}][certificado_actual]`, item.certificado);
             }
           });
           
-          // Identificar IDs a eliminar
-          const idsToDelete = editedData.estudios[tipo]
+          // Identificar elementos a eliminar
+          const idsToDelete = estudios[tipo]
             .filter(item => item.toDelete && item.id)
             .map(item => item.id);
           
@@ -292,51 +296,59 @@ const ResumenDocente = () => {
       });
       
       // Enviar al servidor
-      const response = await axios.put(
-        `http://localhost:5000/api/docentes/actualizar/${docente.id}`,
-        data,
+      const response = await fetch(
+        `/api/docentes/actualizar/${docente.id}`,
         {
+          method: 'PUT',
+          body: data,
           headers: {
-            'Authorization': `Bearer ${token}`,
-            'Content-Type': 'multipart/form-data'
+            'Authorization': `Bearer ${token}`
           }
         }
       );
       
-      if (response.data) {
+      const result = await response.json();
+      
+      if (response.ok) {
         setMessage({ 
           text: 'Perfil actualizado correctamente', 
           type: 'success' 
         });
         
         // Actualizar datos locales
-        const updatedDocente = response.data.docente;
-        setDocente(updatedDocente);
-        
-        // Actualizar también los estudios
-        if (response.data.estudios) {
-          const diplomados = response.data.estudios.filter(est => est.tipo === 'diplomado') || [];
-          const maestrias = response.data.estudios.filter(est => est.tipo === 'maestria') || [];
-          const phds = response.data.estudios.filter(est => est.tipo === 'phd') || [];
+        if (result.docente) {
+          setDocente(result.docente);
+          setEditedData(result.docente);
           
-          const updatedEstudios = {
-            diplomados,
-            maestrias,
-            phds
-          };
+          // Recargar estudios
+          if (result.docente.id) {
+            const estudiosRes = await fetch(`/api/docentes/estudios/${result.docente.id}`);
+            
+            if (estudiosRes.ok) {
+              const estudiosData = await estudiosRes.json();
+              
+              // Organizar estudios por tipo
+              const diplomados = estudiosData.filter(est => est.tipo === 'diplomado') || [];
+              const maestrias = estudiosData.filter(est => est.tipo === 'maestria') || [];
+              const phds = estudiosData.filter(est => est.tipo === 'phd') || [];
+              
+              setEstudios({
+                diplomados,
+                maestrias,
+                phds
+              });
+            }
+          }
           
-          setEstudios(updatedEstudios);
-          setEditedData({
-            ...updatedDocente,
-            estudios: updatedEstudios
-          });
-        } else {
-          setEditedData(updatedDocente);
+          setEditMode(false);
+          setNewPhoto(null);
+          setPhotoPreview(result.docente.fotografia ? `/uploads/${result.docente.fotografia}` : null);
         }
-        
-        setEditMode(false);
-        setNewPhoto(null);
-        setPhotoPreview(null);
+      } else {
+        setMessage({ 
+          text: result.error || 'Error al actualizar el perfil', 
+          type: 'error' 
+        });
       }
     } catch (error) {
       console.error('Error al actualizar perfil:', error);
@@ -359,11 +371,6 @@ const ResumenDocente = () => {
   }
 
   if (!docente) return null;
-
-  // Asegurarnos de que editedData tenga los datos actuales
-  if (editMode && (!editedData || Object.keys(editedData).length === 0)) {
-    setEditedData({...docente, estudios});
-  }
 
   return (
     <div className="resumen-docente">
@@ -449,7 +456,7 @@ const ResumenDocente = () => {
           {editMode ? (
             <div className="edit-foto">
               <img
-                src={photoPreview || (docente.fotografia ? `http://localhost:5000/uploads/${docente.fotografia}` : '/placeholder-user.png')}
+                src={photoPreview || '/placeholder-user.png'}
                 alt="Foto de perfil"
                 className="perfil-foto"
               />
@@ -466,7 +473,7 @@ const ResumenDocente = () => {
           ) : (
             docente.fotografia ? (
               <img
-                src={`http://localhost:5000/uploads/${docente.fotografia}`}
+                src={`/uploads/${docente.fotografia}`}
                 alt={`${docente.nombres} ${docente.apellidos}`}
                 className="perfil-foto"
               />
@@ -679,8 +686,8 @@ const ResumenDocente = () => {
             
             {editMode ? (
               <div className="formaciones-list">
-                {editedData.estudios && editedData.estudios.diplomados && editedData.estudios.diplomados.length > 0 ? (
-                  editedData.estudios.diplomados.map((item, index) => (
+                {estudios.diplomados && estudios.diplomados.length > 0 ? (
+                  estudios.diplomados.map((item, index) => (
                     !item.toDelete && (
                       <div className="formacion-item-edit" key={`diplomado-edit-${index}`}>
                         <div className="formacion-header">
@@ -719,7 +726,7 @@ const ResumenDocente = () => {
                                   <button
                                     type="button"
                                     className="btn-preview-small"
-                                    onClick={() => handlePreviewCertificado(`http://localhost:5000/uploads/${item.certificado}`)}
+                                    onClick={() => handlePreviewCertificado(item.certificado)}
                                   >
                                     Ver
                                   </button>
@@ -745,11 +752,10 @@ const ResumenDocente = () => {
                   <p className="no-data">No hay diplomados registrados. Haga clic en "Añadir diplomado" para agregar uno.</p>
                 )}
                 
-                {editedData.estudios && editedData.estudios.diplomados && 
-                 editedData.estudios.diplomados.some(item => item.toDelete) && (
+                {estudios.diplomados && estudios.diplomados.some(item => item.toDelete) && (
                   <div className="deleted-items">
                     <h4>Elementos a eliminar</h4>
-                    {editedData.estudios.diplomados.map((item, index) => (
+                    {estudios.diplomados.map((item, index) => (
                       item.toDelete && (
                         <div className="deleted-item" key={`diplomado-deleted-${index}`}>
                           <span>{item.universidad || 'Sin universidad'} ({item.anio || 'Sin año'})</span>
@@ -778,7 +784,7 @@ const ResumenDocente = () => {
                       {item.certificado && (
                         <button 
                           className="btn-preview" 
-                          onClick={() => handlePreviewCertificado(`http://localhost:5000/uploads/${item.certificado}`)}
+                          onClick={() => handlePreviewCertificado(item.certificado)}
                         >
                           Ver certificado
                         </button>
@@ -809,8 +815,8 @@ const ResumenDocente = () => {
             
             {editMode ? (
               <div className="formaciones-list">
-                {editedData.estudios && editedData.estudios.maestrias && editedData.estudios.maestrias.length > 0 ? (
-                  editedData.estudios.maestrias.map((item, index) => (
+                {estudios.maestrias && estudios.maestrias.length > 0 ? (
+                  estudios.maestrias.map((item, index) => (
                     !item.toDelete && (
                       <div className="formacion-item-edit" key={`maestria-edit-${index}`}>
                         <div className="formacion-header">
@@ -845,333 +851,331 @@ const ResumenDocente = () => {
                             <div className="certificado-edit">
                               {item.certificado && !item.certificadoChanged && (
                                 <div className="certificado-actual">
-                                <span>Certificado actual: {item.certificado}</span>
-                                <button
-                                  type="button"
-                                  className="btn-preview-small"
-                                  onClick={() => handlePreviewCertificado(`http://localhost:5000/uploads/${item.certificado}`)}
-                                >
-                                  Ver
-                                </button>
-                              </div>
-                            )}
-                            <input 
-                              type="file" 
-                              accept="image/*,application/pdf" 
-                              onChange={(e) => handleCertificadoChange(e, 'maestrias', index)}
-                            />
-                            {item.newCertificado && (
-                              <span className="new-file">
-                                Nuevo archivo: {item.newCertificado.name}
-                              </span>
-                            )}
+                                  <span>Certificado actual: {item.certificado}</span>
+                                  <button
+                                    type="button"
+                                    className="btn-preview-small"
+                                    onClick={() => handlePreviewCertificado(item.certificado)}
+                                  >
+                                    Ver
+                                  </button>
+                                </div>
+                              )}
+                              <input 
+                                type="file" 
+                                accept="image/*,application/pdf" 
+                                onChange={(e) => handleCertificadoChange(e, 'maestrias', index)}
+                              />
+                              {item.newCertificado && (
+                                <span className="new-file">
+                                  Nuevo archivo: {item.newCertificado.name}
+                                </span>
+                              )}
+                            </div>
                           </div>
                         </div>
                       </div>
-                    </div>
-                  )
-                ))
-              ) : (
-                <p className="no-data">No hay maestrías registradas. Haga clic en "Añadir maestría" para agregar una.</p>
-              )}
-              
-              {editedData.estudios && editedData.estudios.maestrias && 
-               editedData.estudios.maestrias.some(item => item.toDelete) && (
-                <div className="deleted-items">
-                  <h4>Elementos a eliminar</h4>
-                  {editedData.estudios.maestrias.map((item, index) => (
-                    item.toDelete && (
-                      <div className="deleted-item" key={`maestria-deleted-${index}`}>
-                        <span>{item.universidad || 'Sin universidad'} ({item.anio || 'Sin año'})</span>
-                        <button 
-                          type="button" 
-                          className="btn-restore"
-                          onClick={() => undoRemoveFormacion('maestrias', index)}
-                        >
-                          Restaurar
-                        </button>
-                      </div>
                     )
-                  ))}
-                </div>
-              )}
-            </div>
-          ) : (
-            <div className="certificados-grid">
-              {estudios.maestrias && estudios.maestrias.length > 0 ? (
-                estudios.maestrias.map((item, index) => (
-                  <div className="certificado-item" key={`maestria-${index}`}>
-                    <div className="certificado-info">
-                      <h4>{item.universidad || 'Universidad no especificada'}</h4>
-                      <p>Año: {item.anio || 'No especificado'}</p>
-                    </div>
-                    {item.certificado && (
-                      <button 
-                        className="btn-preview" 
-                        onClick={() => handlePreviewCertificado(`http://localhost:5000/uploads/${item.certificado}`)}
-                      >
-                        Ver certificado
-                      </button>
-                    )}
+                  ))
+                ) : (
+                  <p className="no-data">No hay maestrías registradas. Haga clic en "Añadir maestría" para agregar una.</p>
+                )}
+                
+                {estudios.maestrias && estudios.maestrias.some(item => item.toDelete) && (
+                  <div className="deleted-items">
+                    <h4>Elementos a eliminar</h4>
+                    {estudios.maestrias.map((item, index) => (
+                      item.toDelete && (
+                        <div className="deleted-item" key={`maestria-deleted-${index}`}>
+                          <span>{item.universidad || 'Sin universidad'} ({item.anio || 'Sin año'})</span>
+                          <button 
+                            type="button" 
+                            className="btn-restore"
+                            onClick={() => undoRemoveFormacion('maestrias', index)}
+                          >
+                            Restaurar
+                          </button>
+                        </div>
+                      )
+                    ))}
                   </div>
-                ))
-              ) : (
-                <p className="no-data">No hay maestrías registradas</p>
-              )}
-            </div>
-          )}
-        </div>
-
-        {/* Doctorados */}
-        <div className="info-card">
-          <div className="card-header">
-            <h3>Doctorados (PhD)</h3>
-            {editMode && (
-              <button 
-                type="button" 
-                className="btn-add"
-                onClick={() => addFormacion('phds')}
-              >
-                + Añadir doctorado
-              </button>
+                )}
+              </div>
+            ) : (
+              <div className="certificados-grid">
+                {estudios.maestrias && estudios.maestrias.length > 0 ? (
+                  estudios.maestrias.map((item, index) => (
+                    <div className="certificado-item" key={`maestria-${index}`}>
+                      <div className="certificado-info">
+                        <h4>{item.universidad || 'Universidad no especificada'}</h4>
+                        <p>Año: {item.anio || 'No especificado'}</p>
+                      </div>
+                      {item.certificado && (
+                        <button 
+                          className="btn-preview" 
+                          onClick={() => handlePreviewCertificado(item.certificado)}
+                        >
+                          Ver certificado
+                        </button>
+                      )}
+                    </div>
+                  ))
+                ) : (
+                  <p className="no-data">No hay maestrías registradas</p>
+                )}
+              </div>
             )}
           </div>
-          
-          {editMode ? (
-            <div className="formaciones-list">
-              {editedData.estudios && editedData.estudios.phds && editedData.estudios.phds.length > 0 ? (
-                editedData.estudios.phds.map((item, index) => (
-                  !item.toDelete && (
-                    <div className="formacion-item-edit" key={`phd-edit-${index}`}>
-                      <div className="formacion-header">
-                        <span className="formacion-title">Doctorado {index + 1}</span>
-                        <button 
-                          type="button" 
-                          className="btn-remove"
-                          onClick={() => removeFormacion('phds', index)}
-                        >
-                          Eliminar
-                        </button>
-                      </div>
-                      <div className="edit-grid">
-                        <div className="edit-group">
-                          <label>Universidad</label>
-                          <input 
-                            type="text" 
-                            value={item.universidad || ''} 
-                            onChange={(e) => handleFormacionChange(e, 'phds', index, 'universidad')}
-                          />
+
+          {/* Doctorados */}
+          <div className="info-card">
+            <div className="card-header">
+              <h3>Doctorados (PhD)</h3>
+              {editMode && (
+                <button 
+                  type="button" 
+                  className="btn-add"
+                  onClick={() => addFormacion('phds')}
+                >
+                  + Añadir doctorado
+                </button>
+              )}
+            </div>
+            
+            {editMode ? (
+              <div className="formaciones-list">
+                {estudios.phds && estudios.phds.length > 0 ? (
+                  estudios.phds.map((item, index) => (
+                    !item.toDelete && (
+                      <div className="formacion-item-edit" key={`phd-edit-${index}`}>
+                        <div className="formacion-header">
+                          <span className="formacion-title">Doctorado {index + 1}</span>
+                          <button 
+                            type="button" 
+                            className="btn-remove"
+                            onClick={() => removeFormacion('phds', index)}
+                          >
+                            Eliminar
+                          </button>
                         </div>
-                        <div className="edit-group">
-                          <label>Año</label>
-                          <input 
-                            type="number" 
-                            value={item.anio || ''} 
-                            onChange={(e) => handleFormacionChange(e, 'phds', index, 'anio')}
-                          />
-                        </div>
-                        <div className="edit-group full-width">
-                          <label>Certificado</label>
-                          <div className="certificado-edit">
-                            {item.certificado && !item.certificadoChanged && (
-                              <div className="certificado-actual">
-                                <span>Certificado actual: {item.certificado}</span>
-                                <button
-                                  type="button"
-                                  className="btn-preview-small"
-                                  onClick={() => handlePreviewCertificado(`http://localhost:5000/uploads/${item.certificado}`)}
-                                >
-                                  Ver
-                                </button>
-                              </div>
-                            )}
+                        <div className="edit-grid">
+                          <div className="edit-group">
+                            <label>Universidad</label>
                             <input 
-                              type="file" 
-                              accept="image/*,application/pdf" 
-                              onChange={(e) => handleCertificadoChange(e, 'phds', index)}
+                              type="text" 
+                              value={item.universidad || ''} 
+                              onChange={(e) => handleFormacionChange(e, 'phds', index, 'universidad')}
                             />
-                            {item.newCertificado && (
-                              <span className="new-file">
-                                Nuevo archivo: {item.newCertificado.name}
-                              </span>
-                            )}
+                          </div>
+                          <div className="edit-group">
+                            <label>Año</label>
+                            <input 
+                              type="number" 
+                              value={item.anio || ''} 
+                              onChange={(e) => handleFormacionChange(e, 'phds', index, 'anio')}
+                            />
+                          </div>
+                          <div className="edit-group full-width">
+                            <label>Certificado</label>
+                            <div className="certificado-edit">
+                              {item.certificado && !item.certificadoChanged && (
+                                <div className="certificado-actual">
+                                  <span>Certificado actual: {item.certificado}</span>
+                                  <button
+                                    type="button"
+                                    className="btn-preview-small"
+                                    onClick={() => handlePreviewCertificado(item.certificado)}
+                                  >
+                                    Ver
+                                  </button>
+                                </div>
+                              )}
+                              <input 
+                                type="file" 
+                                accept="image/*,application/pdf" 
+                                onChange={(e) => handleCertificadoChange(e, 'phds', index)}
+                              />
+                              {item.newCertificado && (
+                                <span className="new-file">
+                                  Nuevo archivo: {item.newCertificado.name}
+                                </span>
+                              )}
+                            </div>
                           </div>
                         </div>
                       </div>
-                    </div>
-                  )
-                ))
-              ) : (
-                <p className="no-data">No hay doctorados registrados. Haga clic en "Añadir doctorado" para agregar uno.</p>
-              )}
-              
-              {editedData.estudios && editedData.estudios.phds && 
-               editedData.estudios.phds.some(item => item.toDelete) && (
-                <div className="deleted-items">
-                  <h4>Elementos a eliminar</h4>
-                  {editedData.estudios.phds.map((item, index) => (
-                    item.toDelete && (
-                      <div className="deleted-item" key={`phd-deleted-${index}`}>
-                        <span>{item.universidad || 'Sin universidad'} ({item.anio || 'Sin año'})</span>
+                    )
+                  ))
+                ) : (
+                  <p className="no-data">No hay doctorados registrados. Haga clic en "Añadir doctorado" para agregar uno.</p>
+                )}
+                
+                {estudios.phds && estudios.phds.some(item => item.toDelete) && (
+                  <div className="deleted-items">
+                    <h4>Elementos a eliminar</h4>
+                    {estudios.phds.map((item, index) => (
+                      item.toDelete && (
+                        <div className="deleted-item" key={`phd-deleted-${index}`}>
+                          <span>{item.universidad || 'Sin universidad'} ({item.anio || 'Sin año'})</span>
+                          <button 
+                            type="button" 
+                            className="btn-restore"
+                            onClick={() => undoRemoveFormacion('phds', index)}
+                          >
+                            Restaurar
+                          </button>
+                        </div>
+                      )
+                    ))}
+                  </div>
+                )}
+              </div>
+            ) : (
+              <div className="certificados-grid">
+                {estudios.phds && estudios.phds.length > 0 ? (
+                  estudios.phds.map((item, index) => (
+                    <div className="certificado-item" key={`phd-${index}`}>
+                      <div className="certificado-info">
+                        <h4>{item.universidad || 'Universidad no especificada'}</h4>
+                        <p>Año: {item.anio || 'No especificado'}</p>
+                      </div>
+                      {item.certificado && (
                         <button 
-                          type="button" 
-                          className="btn-restore"
-                          onClick={() => undoRemoveFormacion('phds', index)}
+                          className="btn-preview" 
+                          onClick={() => handlePreviewCertificado(item.certificado)}
                         >
-                          Restaurar
+                          Ver certificado
                         </button>
+                      )}
+                    </div>
+                  ))
+                ) : (
+                  <p className="no-data">No hay doctorados registrados</p>
+                )}
+              </div>
+            )}
+          </div>
+        </div>
+
+        {/* Tab de experiencia profesional */}
+        <div className={`tab-content ${activeTab === 'experiencia' ? 'active' : ''}`}>
+          <div className="info-card">
+            <h3>Experiencia</h3>
+            
+            {editMode ? (
+              <div className="edit-grid">
+                <div className="edit-group">
+                  <label>Experiencia Laboral (años)</label>
+                  <input 
+                    type="number" 
+                    name="experiencia_laboral" 
+                    value={editedData.experiencia_laboral || ''} 
+                    onChange={handleInputChange}
+                    min="0"
+                  />
+                </div>
+                <div className="edit-group">
+                  <label>Experiencia Docente (años)</label>
+                  <input 
+                    type="number" 
+                    name="experiencia_docente" 
+                    value={editedData.experiencia_docente || ''} 
+                    onChange={handleInputChange}
+                    min="0"
+                  />
+                </div>
+                <div className="edit-group">
+                  <label>Categoría Docente</label>
+                  <input 
+                    type="text" 
+                    name="categoria_docente" 
+                    value={editedData.categoria_docente || ''} 
+                    onChange={handleInputChange}
+                  />
+                </div>
+                <div className="edit-group">
+                  <label>Modalidad de Ingreso</label>
+                  <input 
+                    type="text" 
+                    name="modalidad_ingreso" 
+                    value={editedData.modalidad_ingreso || ''} 
+                    onChange={handleInputChange}
+                  />
+                </div>
+              </div>
+            ) : (
+              <>
+                <div className="info-row">
+                  <div className="info-item">
+                    <span className="info-label">Experiencia Laboral</span>
+                    <span className="info-value">{docente.experiencia_laboral || '0'} años</span>
+                  </div>
+                  <div className="info-item">
+                    <span className="info-label">Experiencia Docente</span>
+                    <span className="info-value">{docente.experiencia_docente || '0'} años</span>
+                  </div>
+                </div>
+                
+                <div className="info-row">
+                  <div className="info-item">
+                    <span className="info-label">Categoría Docente</span>
+                    <span className="info-value">{docente.categoria_docente || 'No especificado'}</span>
+                  </div>
+                  <div className="info-item">
+                    <span className="info-label">Modalidad de Ingreso</span>
+                    <span className="info-value">{docente.modalidad_ingreso || 'No especificado'}</span>
+                  </div>
+                </div>
+              </>
+            )}
+          </div>
+
+          <div className="info-card">
+            <h3>Asignaturas</h3>
+            
+            {editMode ? (
+              <div className="edit-group full-width">
+                <textarea 
+                  name="asignaturas" 
+                  value={editedData.asignaturas || ''} 
+                  onChange={handleInputChange}
+                  placeholder="Ingrese las asignaturas separadas por saltos de línea"
+                  rows="5"
+                ></textarea>
+                <p className="help-text">Ingrese una asignatura por línea</p>
+              </div>
+            ) : (
+              <div className="asignaturas-container">
+                {docente.asignaturas ? (
+                  docente.asignaturas.split('\n').map((asignatura, index) => (
+                    asignatura.trim() && (
+                      <div className="asignatura-chip" key={index}>
+                        {asignatura.trim()}
                       </div>
                     )
-                  ))}
-                </div>
-              )}
-            </div>
-          ) : (
-            <div className="certificados-grid">
-              {estudios.phds && estudios.phds.length > 0 ? (
-                estudios.phds.map((item, index) => (
-                  <div className="certificado-item" key={`phd-${index}`}>
-                    <div className="certificado-info">
-                      <h4>{item.universidad || 'Universidad no especificada'}</h4>
-                      <p>Año: {item.anio || 'No especificado'}</p>
-                    </div>
-                    {item.certificado && (
-                      <button 
-                        className="btn-preview" 
-                        onClick={() => handlePreviewCertificado(`http://localhost:5000/uploads/${item.certificado}`)}
-                      >
-                        Ver certificado
-                      </button>
-                    )}
-                  </div>
-                ))
-              ) : (
-                <p className="no-data">No hay doctorados registrados</p>
-              )}
-            </div>
-          )}
-        </div>
-      </div>
-
-      {/* Tab de experiencia profesional */}
-      <div className={`tab-content ${activeTab === 'experiencia' ? 'active' : ''}`}>
-        <div className="info-card">
-          <h3>Experiencia</h3>
-          
-          {editMode ? (
-            <div className="edit-grid">
-              <div className="edit-group">
-                <label>Experiencia Laboral (años)</label>
-                <input 
-                  type="number" 
-                  name="experiencia_laboral" 
-                  value={editedData.experiencia_laboral || ''} 
-                  onChange={handleInputChange}
-                  min="0"
-                />
+                  ))
+                ) : (
+                  <p className="no-data">No hay asignaturas registradas</p>
+                )}
               </div>
-              <div className="edit-group">
-                <label>Experiencia Docente (años)</label>
-                <input 
-                  type="number" 
-                  name="experiencia_docente" 
-                  value={editedData.experiencia_docente || ''} 
-                  onChange={handleInputChange}
-                  min="0"
-                />
-              </div>
-              <div className="edit-group">
-                <label>Categoría Docente</label>
-                <input 
-                  type="text" 
-                  name="categoria_docente" 
-                  value={editedData.categoria_docente || ''} 
-                  onChange={handleInputChange}
-                />
-              </div>
-              <div className="edit-group">
-                <label>Modalidad de Ingreso</label>
-                <input 
-                  type="text" 
-                  name="modalidad_ingreso" 
-                  value={editedData.modalidad_ingreso || ''} 
-                  onChange={handleInputChange}
-                />
-              </div>
-            </div>
-          ) : (
-            <>
-              <div className="info-row">
-                <div className="info-item">
-                  <span className="info-label">Experiencia Laboral</span>
-                  <span className="info-value">{docente.experiencia_laboral} años</span>
-                </div>
-                <div className="info-item">
-                  <span className="info-label">Experiencia Docente</span>
-                  <span className="info-value">{docente.experiencia_docente} años</span>
-                </div>
-              </div>
-              
-              <div className="info-row">
-                <div className="info-item">
-                  <span className="info-label">Categoría Docente</span>
-                  <span className="info-value">{docente.categoria_docente || 'No especificado'}</span>
-                </div>
-                <div className="info-item">
-                  <span className="info-label">Modalidad de Ingreso</span>
-                  <span className="info-value">{docente.modalidad_ingreso || 'No especificado'}</span>
-                </div>
-              </div>
-            </>
-          )}
-        </div>
-
-        <div className="info-card">
-          <h3>Asignaturas</h3>
-          
-          {editMode ? (
-            <div className="edit-group full-width">
-              <textarea 
-                name="asignaturas" 
-                value={editedData.asignaturas || ''} 
-                onChange={handleInputChange}
-                placeholder="Ingrese las asignaturas separadas por saltos de línea"
-                rows="5"
-              ></textarea>
-              <p className="help-text">Ingrese una asignatura por línea</p>
-            </div>
-          ) : (
-            <div className="asignaturas-container">
-              {docente.asignaturas ? (
-                docente.asignaturas.split('\n').map((asignatura, index) => (
-                  asignatura.trim() && (
-                    <div className="asignatura-chip" key={index}>
-                      {asignatura.trim()}
-                    </div>
-                  )
-                ))
-              ) : (
-                <p className="no-data">No hay asignaturas registradas</p>
-              )}
-            </div>
-          )}
-        </div>
-      </div>
-    </div>
-
-    {/* Modal para previsualizar certificados */}
-    {certificadoPreview && (
-      <div className="certificado-modal">
-        <div className="certificado-modal-content">
-          <button className="close-modal" onClick={closePreview}>×</button>
-          <div className="certificado-preview">
-            <img src={certificadoPreview} alt="Certificado" />
+            )}
           </div>
         </div>
       </div>
-    )}
-  </div>
-);
+
+      {/* Modal para previsualizar certificados */}
+      {certificadoPreview && (
+        <div className="certificado-modal">
+          <div className="certificado-modal-content">
+            <button className="close-modal" onClick={closePreview}>×</button>
+            <div className="certificado-preview">
+              <img src={certificadoPreview} alt="Certificado" />
+            </div>
+          </div>
+        </div>
+      )}
+    </div>
+  );
 };
 
 export default ResumenDocente;

@@ -451,14 +451,6 @@ const FormularioDocente = ({ onFormSuccess }) => {
                 required 
               />
             </div>
-            <div className="form-group full-width">
-              <label>Asignaturas que dicta</label>
-              <textarea 
-                name="asignaturas" 
-                placeholder="Lista de asignaturas (una por línea)" 
-                onChange={handleChange} 
-              />
-            </div>
           </div>
           <div className="form-navigation-buttons">
             <button 

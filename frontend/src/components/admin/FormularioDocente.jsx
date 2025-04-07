@@ -458,6 +458,7 @@ const FormularioDocente = ({ onFormSuccess }) => {
               className="prev-btn" 
               onClick={() => changeSection('academica')}
             >
+              
               Anterior
             </button>
             <button 

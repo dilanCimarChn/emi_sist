@@ -297,16 +297,15 @@ const ResumenDocente = () => {
       });
       
       // Enviar al servidor
-      const response = await fetch(
-        `/api/docentes/actualizar/${docente.id}`,
-        {
-          method: 'PUT',
-          body: data,
-          headers: {
-            'Authorization': `Bearer ${token}`
-          }
+// correcto
+      const response = await fetch(`/api/docentes/actualizar/${docente.id}`, {
+        method: 'PUT',
+        body: data,
+        headers: {
+          Authorization: `Bearer ${token}`
         }
-      );
+      });
+
       
       const result = await response.json();
       

@@ -164,36 +164,134 @@ const getTodosLosDocentes = async (req, res) => {
 
 // ✅ Actualizar datos del docente
 const actualizarDocente = async (req, res) => {
-  const { id } = req.params;
-  const {
-    nombres, apellidos, correo_electronico, grado_academico,
-    titulo, universidad, anio_titulacion
-  } = req.body;
+  const client = await pool.connect();
+  const docenteId = req.params.id;
 
   try {
-    const result = await pool.query(
+    await client.query('BEGIN');
+
+    const {
+      nombres, apellidos, correo_electronico, ci, genero,
+      grado_academico, titulo, anio_titulacion, universidad,
+      experiencia_laboral, experiencia_docente, categoria_docente,
+      modalidad_ingreso, asignaturas
+    } = req.body;
+
+    const fotografia = req.files?.['fotografia']?.[0]?.filename || req.body.fotografia_actual || null;
+
+    // 📝 Actualizar datos del docente
+    await client.query(
       `UPDATE docentes SET
-        nombres = $1,
-        apellidos = $2,
-        correo_electronico = $3,
-        grado_academico = $4,
-        titulo = $5,
-        universidad = $6,
-        anio_titulacion = $7
-      WHERE id = $8 RETURNING *`,
+        nombres = $1, apellidos = $2, correo_electronico = $3,
+        ci = $4, genero = $5, grado_academico = $6, titulo = $7,
+        anio_titulacion = $8, universidad = $9,
+        experiencia_laboral = $10, experiencia_docente = $11,
+        categoria_docente = $12, modalidad_ingreso = $13,
+        fotografia = $14
+      WHERE id = $15`,
       [
-        nombres, apellidos, correo_electronico,
-        grado_academico, titulo, universidad,
-        anio_titulacion, id
+        nombres, apellidos, correo_electronico, ci, genero,
+        grado_academico, titulo, anio_titulacion, universidad,
+        experiencia_laboral, experiencia_docente,
+        categoria_docente, modalidad_ingreso,
+        fotografia, docenteId
       ]
     );
 
-    res.status(200).json({ message: 'Docente actualizado', docente: result.rows[0] });
+    // 🎯 Actualizar asignaturas (limpiar y volver a insertar)
+    const asignaturaIds = JSON.parse(asignaturas || '[]');
+    await client.query(`DELETE FROM docente_asignatura WHERE docente_id = $1`, [docenteId]);
+
+    if (Array.isArray(asignaturaIds) && asignaturaIds.length > 0) {
+      for (const asignaturaId of asignaturaIds) {
+        await client.query(
+          `INSERT INTO docente_asignatura (docente_id, asignatura_id)
+           VALUES ($1, $2)`,
+          [docenteId, asignaturaId]
+        );
+      }
+    }
+    // Crear un mapa de archivos para acceder fácilmente
+    const fileMap = {};
+    if (req.files && Array.isArray(req.files)) {
+      req.files.forEach(file => {
+        fileMap[file.fieldname] = file;
+      });
+    }
+
+
+
+    // 🧠 Actualizar estudios (nuevos, modificados y eliminados)
+    const estudios = [];
+
+    const parseEstudios = (tipo, bodyField) => {
+      const array = req.body[`estudios[${bodyField}]`] ? JSON.parse(req.body[`estudios[${bodyField}]`]) : [];
+      array.forEach((item, i) => {
+        estudios.push({
+          id: item.id || null,
+          tipo,
+          universidad: item.universidad,
+          anio: parseInt(item.anio),
+          certificado: fileMap[`estudios[diplomados][${i}][certificado]`]?.filename
+            || fileMap[`estudios[maestrias][${i}][certificado]`]?.filename
+            || fileMap[`estudios[phds][${i}][certificado]`]?.filename || null,
+          isNew: !item.id // Si no tiene ID, es nuevo
+        });
+      });
+    };
+
+    parseEstudios('diplomado', 'diplomados');
+    parseEstudios('maestria', 'maestrias');
+    parseEstudios('phd', 'phds');
+
+    // Guardar estudios
+    for (const est of estudios) {
+      if (est.isNew) {
+        await client.query(
+          `INSERT INTO estudios (docente_id, tipo, universidad, anio, certificado)
+           VALUES ($1, $2, $3, $4, $5)`,
+          [docenteId, est.tipo, est.universidad, est.anio, est.certificado]
+        );
+      } else {
+        await client.query(
+          `UPDATE estudios SET
+            tipo = $1, universidad = $2, anio = $3, certificado = $4
+           WHERE id = $5 AND docente_id = $6`,
+          [est.tipo, est.universidad, est.anio, est.certificado, est.id, docenteId]
+        );
+      }
+    }
+
+    // 🗑 Eliminar estudios marcados para borrar
+    ['diplomados', 'maestrias', 'phds'].forEach(async (tipo) => {
+      const raw = req.body[`estudios_eliminar[${tipo}]`];
+      if (raw) {
+        const ids = JSON.parse(raw);
+        if (Array.isArray(ids)) {
+          for (const id of ids) {
+            await client.query(`DELETE FROM estudios WHERE id = $1 AND docente_id = $2`, [id, docenteId]);
+          }
+        }
+      }
+    });
+
+    await client.query('COMMIT');
+
+    // Respuesta final
+    res.status(200).json({ message: '✅ Perfil actualizado correctamente', docente: { id: docenteId } });
+
   } catch (error) {
-    console.error('❌ Error actualizando docente:', error);
-    res.status(500).json({ error: 'Error al actualizar el docente' });
+    await client.query('ROLLBACK');
+    console.error('❌ Error al actualizar perfil:', error);
+    res.status(500).json({
+      error: 'Error al actualizar el perfil del docente',
+      detalle: error.message
+    });
+  } finally {
+    client.release();
   }
 };
+
 
 // ✅ Obtener estudios por docente_id
 const obtenerEstudiosPorDocente = async (req, res) => {

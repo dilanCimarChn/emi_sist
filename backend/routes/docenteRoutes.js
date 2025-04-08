@@ -2,6 +2,7 @@ const express = require('express');
 const router = express.Router();
 
 const upload = require('../middleware/uploadMiddleware');
+
 const {
   crearDocente,
   obtenerDocentePorUsuarioId,
@@ -56,6 +57,7 @@ router.get('/', getTodosLosDocentes);
 router.get('/:id', getDocentePorId);
 
 // ✏️ Actualizar datos del docente
-router.put('/:id', actualizarDocente);
+router.put('/actualizar/:id', verificarToken, upload.any(), actualizarDocente);
+
 
 module.exports = router;

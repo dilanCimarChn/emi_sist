@@ -64,12 +64,6 @@ const DetalleDocente = ({ docente }) => {
         </div>
   
         <div className="action-buttons-container">
-          <button
-            className="btn-editar"
-            onClick={() => navigate(`/admin/docentes/editar/${docente.id}`)}
-          >
-            Editar información
-          </button>
   
           <button
             className="btn-ver-detalles"

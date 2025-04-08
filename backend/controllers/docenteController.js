@@ -168,6 +168,9 @@ const actualizarDocente = async (req, res) => {
   const docenteId = req.params.id;
 
   try {
+    console.log('✅ BODY:', req.body);
+    console.log('📂 FILES:', req.files);
+
     await client.query('BEGIN');
 
     const {

@@ -2,13 +2,14 @@ const express = require('express');
 const router = express.Router();
 
 const upload = require('../middleware/uploadMiddleware');
+
 const {
   crearDocente,
   obtenerDocentePorUsuarioId,
   getDocentePorId,
   getTodosLosDocentes,
   actualizarDocente,
-  obtenerEstudiosPorDocente // ✅ Importación agregada
+  obtenerEstudiosPorDocente
 } = require('../controllers/docenteController');
 
 const { verificarToken, esDocente } = require('../middleware/authMiddleware');
@@ -21,7 +22,7 @@ router.get('/test', (req, res) => {
   });
 });
 
-// 📎 Campos esperados para subir con multer (máximo 10 por tipo)
+// 📎 Campos para subir múltiples archivos (máximo 10 por tipo)
 const fileFields = [{ name: 'fotografia', maxCount: 1 }];
 for (let i = 0; i < 10; i++) {
   fileFields.push({ name: `diplomados[${i}][certificado]`, maxCount: 1 });
@@ -29,7 +30,7 @@ for (let i = 0; i < 10; i++) {
   fileFields.push({ name: `phds[${i}][certificado]`, maxCount: 1 });
 }
 
-// 📥 Crear nuevo docente (protegido con auth y multer)
+// 📝 Crear nuevo docente (con token y subida de archivos)
 router.post(
   '/crear',
   verificarToken,
@@ -38,7 +39,7 @@ router.post(
   crearDocente
 );
 
-// 🔐 Obtener docente por usuario_id (protegido)
+// 🔐 Obtener docente por usuario_id (protección por token)
 router.get(
   '/usuario/:usuarioId',
   verificarToken,
@@ -46,16 +47,17 @@ router.get(
   obtenerDocentePorUsuarioId
 );
 
-// 📄 Obtener estudios de un docente por su ID (sin protección porque es vista admin)
+// 📄 Obtener estudios de un docente por ID
 router.get('/estudios/:docente_id', obtenerEstudiosPorDocente);
 
-// 📋 Obtener todos los docentes (por admin o para mostrar lista)
+// 📋 Obtener todos los docentes
 router.get('/', getTodosLosDocentes);
 
 // 🔍 Obtener un docente específico por su ID
 router.get('/:id', getDocentePorId);
 
 // ✏️ Actualizar datos del docente
-router.put('/:id', actualizarDocente);
+router.put('/actualizar/:id', verificarToken, upload.any(), actualizarDocente);
+
 
 module.exports = router;

@@ -7,10 +7,11 @@ require('dotenv').config();
 
 const pool = require('./db');
 
-// 🛣 Rutas
+// 📦 Rutas
 const authRoutes = require('./routes/authRoutes');
 const adminRoutes = require('./routes/adminRoutes');
 const docenteRoutes = require('./routes/docenteRoutes');
+const asignaturaRoutes = require('./routes/asignaturaRoutes');
 
 const app = express();
 const port = process.env.PORT || 5000;
@@ -20,9 +21,9 @@ const port = process.env.PORT || 5000;
 // ================================
 app.use(helmet()); // Encabezados de seguridad
 
-// 🌐 Configuración de CORS
+// 🌐 CORS antes que cualquier ruta
 app.use(cors({
-  origin: 'http://localhost:5173', // Frontend en desarrollo
+  origin: 'http://localhost:5173', // Frontend de desarrollo
   methods: ['GET', 'POST', 'PUT', 'DELETE'],
   allowedHeaders: ['Content-Type', 'Authorization'],
   credentials: true,
@@ -31,16 +32,16 @@ app.use(cors({
 
 // 💥 Limitador de peticiones
 app.use(rateLimit({
-  windowMs: 15 * 60 * 1000,
-  max: process.env.NODE_ENV !== 'production' ? 1000 : 100,
+  windowMs: 15 * 60 * 1000, // 15 minutos
+  max: process.env.NODE_ENV !== 'production' ? 1000 : 100, // Más flexible en desarrollo
   standardHeaders: true,
   legacyHeaders: false
 }));
 
-// 🧠 Parseo de JSON y formularios
+// 🧠 Parseo de JSON
 app.use(express.json({ limit: '10kb' }));
 
-// 🖼 Archivos estáticos (certificados, fotos)
+// 🖼 Archivos estáticos (certificados, fotos, etc.)
 app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 
 // ================================
@@ -49,8 +50,9 @@ app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 app.use('/api/auth', authRoutes);
 app.use('/api/admin', adminRoutes);
 app.use('/api/docentes', docenteRoutes);
+app.use('/api/asignaturas', asignaturaRoutes); // ← ✅ ahora está en el orden correcto
 
-// 🧪 Ruta de prueba
+// ✅ Ruta base
 app.get('/', (req, res) => {
   res.status(200).json({ 
     message: '✅ Backend funcionando correctamente',
@@ -70,7 +72,7 @@ app.use((req, res) => {
   });
 });
 
-// ❌ Error interno del servidor
+// ❌ Error interno
 app.use((err, req, res, next) => {
   console.error('❌ Error interno:', err.stack);
   res.status(err.status || 500).json({
@@ -87,14 +89,14 @@ app.listen(port, () => {
   console.log(`🚀 Servidor corriendo en: http://localhost:${port}`);
 });
 
-// 🔌 Cierre limpio de la conexión a la base de datos
+// 🔌 Cierre limpio de conexión DB
 process.on('SIGINT', async () => {
   try {
     await pool.end();
     console.log('✅ Conexión a base de datos cerrada');
     process.exit(0);
   } catch (error) {
-    console.error('❌ Error cerrando la conexión de base de datos:', error);
+    console.error('❌ Error cerrando conexión:', error);
     process.exit(1);
   }
 });

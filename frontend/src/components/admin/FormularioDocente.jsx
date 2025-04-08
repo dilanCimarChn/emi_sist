@@ -7,9 +7,10 @@ const FormularioDocente = ({ onFormSuccess }) => {
     usuario_id: '', nombres: '', apellidos: '', correo_electronico: '', ci: '', genero: '',
     grado_academico: '', titulo: '', anio_titulacion: '', universidad: '',
     experiencia_laboral: '', experiencia_docente: '', categoria_docente: '',
-    modalidad_ingreso: '', asignaturas: ''
+    modalidad_ingreso: '', asignaturas: []
   });
   const [fotografia, setFotografia] = useState(null);
+  const [asignaturasDisponibles, setAsignaturasDisponibles] = useState([]);
   const [fotoPreview, setFotoPreview] = useState(null);
   const [diplomados, setDiplomados] = useState([{ anio: '', universidad: '', certificado: null }]);
   const [maestrias, setMaestrias] = useState([{ anio: '', universidad: '', certificado: null }]);
@@ -22,14 +23,13 @@ const FormularioDocente = ({ onFormSuccess }) => {
   useEffect(() => {
     const id = localStorage.getItem('usuario_id');
     const token = localStorage.getItem('authToken');
-    if (!id) return navigate('/');
+    if (!id || !token) return navigate('/');
   
     setFormData(prev => ({ ...prev, usuario_id: id }));
   
+    // Verificar si el docente ya completó el formulario
     fetch(`http://localhost:5000/api/docentes/usuario/${id}`, {
-      headers: {
-        Authorization: `Bearer ${token}`
-      }
+      headers: { Authorization: `Bearer ${token}` }
     })
       .then(res => {
         if (res.status === 401) throw new Error("No autorizado");
@@ -45,9 +45,18 @@ const FormularioDocente = ({ onFormSuccess }) => {
           }
         }
       })
-      .catch(err => console.error(err));
-
+      .catch(err => console.error('❌ Error al verificar docente:', err));
+  
+    // Cargar asignaturas disponibles
+    fetch('http://localhost:5000/api/asignaturas')
+      .then(res => res.ok ? res.json() : Promise.reject('No se pudo obtener asignaturas'))
+      .then(data => setAsignaturasDisponibles(data))
+      .catch(err => {
+        console.error('❌ Error al cargar asignaturas:', err);
+        setAsignaturasDisponibles([]);
+      });
   }, [navigate, onFormSuccess]);
+  
 
 
   const handleChange = e => {
@@ -99,8 +108,15 @@ const FormularioDocente = ({ onFormSuccess }) => {
 
     const data = new FormData();
     
-    // Datos básicos del docente
-    Object.entries(formData).forEach(([key, value]) => data.append(key, value));
+// Datos básicos del docente (con asignaturas como JSON)
+    Object.entries(formData).forEach(([key, value]) => {
+      if (key === 'asignaturas') {
+        data.append(key, JSON.stringify(value)); // ✅ Enviar asignaturas como array
+      } else {
+        data.append(key, value);
+      }
+    });
+
     
     // Foto de perfil
     if (fotografia) data.append('fotografia', fotografia);
@@ -286,15 +302,38 @@ const FormularioDocente = ({ onFormSuccess }) => {
               </select>
             </div>
             <div className="form-group full-width">
-              <label className="required">Correo electrónico</label>
-              <input 
-                type="email" 
-                name="correo_electronico" 
-                placeholder="ejemplo@dominio.com" 
-                onChange={handleChange} 
-                required 
-              />
+              <label className="required">Asignaturas que dicta</label>
+              <select
+                name="asignaturas"
+                multiple
+                value={formData.asignaturas}
+                onChange={(e) => {
+                  const selected = Array.from(e.target.selectedOptions, opt => opt.value);
+                  setFormData(prev => ({ ...prev, asignaturas: selected }));
+                }}
+                required
+                style={{
+                  width: '100%',
+                  height: '120px',
+                  borderRadius: '6px',
+                  border: '1px solid #ccc',
+                  padding: '8px',
+                  fontSize: '14px',
+                  backgroundColor: '#fff'
+                }}
+              >
+                {asignaturasDisponibles.length > 0 ? (
+                  asignaturasDisponibles.map(asig => (
+                    <option key={asig.id} value={asig.id}>
+                      {asig.nombre}
+                    </option>
+                  ))
+                ) : (
+                  <option disabled>No hay asignaturas disponibles</option>
+                )}
+              </select>
             </div>
+
           </div>
           <div className="form-navigation-buttons">
             <button 
@@ -412,14 +451,6 @@ const FormularioDocente = ({ onFormSuccess }) => {
                 required 
               />
             </div>
-            <div className="form-group full-width">
-              <label>Asignaturas que dicta</label>
-              <textarea 
-                name="asignaturas" 
-                placeholder="Lista de asignaturas (una por línea)" 
-                onChange={handleChange} 
-              />
-            </div>
           </div>
           <div className="form-navigation-buttons">
             <button 
@@ -427,6 +458,7 @@ const FormularioDocente = ({ onFormSuccess }) => {
               className="prev-btn" 
               onClick={() => changeSection('academica')}
             >
+              
               Anterior
             </button>
             <button 

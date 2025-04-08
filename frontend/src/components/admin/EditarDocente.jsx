@@ -24,7 +24,26 @@ const EditarDocente = () => {
     const fetchDocente = async () => {
       try {
         const response = await axios.get(`http://localhost:5000/api/docentes/${id}`);
-        setFormData(response.data);
+        const {
+          nombres,
+          apellidos,
+          correo_electronico,
+          grado_academico,
+          titulo,
+          universidad,
+          anio_titulacion
+        } = response.data;
+        
+        setFormData({
+          nombres,
+          apellidos,
+          correo_electronico,
+          grado_academico,
+          titulo,
+          universidad,
+          anio_titulacion
+        });
+        
         setLoading(false);
       } catch (error) {
         console.error('Error al cargar docente:', error);
@@ -42,8 +61,26 @@ const EditarDocente = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+  
     try {
-      await axios.put(`http://localhost:5000/api/docentes/${id}`, formData);
+      const token = localStorage.getItem('authToken'); // ← si usas token para verificar
+      const form = new FormData();
+  
+      // Añadir cada campo al FormData
+      for (const key in formData) {
+        form.append(key, formData[key]);
+      }
+  
+      // Si no se suben archivos, no añades ninguno.
+      // Pero aún así usas FormData para evitar errores con `upload.any()`
+  
+      await axios.put(`http://localhost:5000/api/docentes/actualizar/${id}`, form, {
+        headers: {
+          'Content-Type': 'multipart/form-data',
+          Authorization: `Bearer ${token}` // si usas `verificarToken`
+        }
+      });
+  
       setMensaje('✅ Docente actualizado correctamente');
       setTimeout(() => navigate('/admin'), 1500);
     } catch (error) {
@@ -51,6 +88,7 @@ const EditarDocente = () => {
       setMensaje('❌ Error al actualizar el docente');
     }
   };
+  
 
   if (loading) return <p>Cargando información...</p>;
 

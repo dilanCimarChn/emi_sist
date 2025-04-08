@@ -2,16 +2,16 @@ const multer = require('multer');
 const path = require('path');
 const fs = require('fs');
 
-// 📁 Ruta donde se guardarán los archivos
+// Ruta donde se guardarán los archivos
 const uploadDir = path.join(__dirname, '../uploads');
 
-// 📌 Asegurar que la carpeta uploads exista
+// Asegurar que la carpeta uploads exista
 if (!fs.existsSync(uploadDir)) {
   fs.mkdirSync(uploadDir, { recursive: true });
   console.log('📁 Carpeta "uploads/" creada automáticamente');
 }
 
-// 🧠 Configuración del almacenamiento
+// Configuración del almacenamiento
 const storage = multer.diskStorage({
   destination: (req, file, cb) => {
     cb(null, uploadDir);
@@ -27,7 +27,7 @@ const storage = multer.diskStorage({
   }
 });
 
-// 🧱 Inicializar el middleware
+// Inicializar el middleware
 const upload = multer({ storage });
 
 module.exports = upload;

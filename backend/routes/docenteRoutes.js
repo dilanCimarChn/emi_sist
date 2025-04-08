@@ -39,7 +39,7 @@ router.post(
   crearDocente
 );
 
-// 🔐 Obtener docente por usuario_id (protección por token)
+// Obtener docente por usuario_id (protección por token)
 router.get(
   '/usuario/:usuarioId',
   verificarToken,
@@ -47,16 +47,16 @@ router.get(
   obtenerDocentePorUsuarioId
 );
 
-// 📄 Obtener estudios de un docente por ID
+// Obtener estudios de un docente por ID
 router.get('/estudios/:docente_id', obtenerEstudiosPorDocente);
 
-// 📋 Obtener todos los docentes
+// Obtener todos los docentes
 router.get('/', getTodosLosDocentes);
 
-// 🔍 Obtener un docente específico por su ID
+//Obtener un docente específico por su ID
 router.get('/:id', getDocentePorId);
 
-// ✏️ Actualizar datos del docente
+// Actualizar datos del docente
 router.put('/actualizar/:id', verificarToken, upload.any(), actualizarDocente);
 
 

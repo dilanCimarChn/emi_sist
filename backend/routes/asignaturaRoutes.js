@@ -2,7 +2,7 @@ const express = require('express');
 const router = express.Router();
 const pool = require('../db');
 
-// ✅ Ruta para obtener todas las asignaturas
+// Ruta para obtener todas las asignaturas
 router.get('/', async (req, res) => {
   try {
     const result = await pool.query('SELECT * FROM asignaturas ORDER BY id ASC');

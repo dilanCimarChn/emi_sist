@@ -1,6 +1,6 @@
 const pool = require('../db');
 
-// ✅ Crear Docente con estudios y asignaturas
+// Crear Docente con estudios y asignaturas
 const crearDocente = async (req, res) => {
   const client = await pool.connect();
 
@@ -21,7 +21,7 @@ const crearDocente = async (req, res) => {
 
     const fotografia = req.files?.['fotografia']?.[0]?.filename || null;
 
-    // 👤 Insertar en tabla docentes
+    // Insertar en tabla docentes
     const result = await client.query(
       `INSERT INTO docentes (
         usuario_id, nombres, apellidos, correo_electronico, ci,
@@ -57,7 +57,7 @@ const crearDocente = async (req, res) => {
       }
     }
 
-    // 🎓 Procesar estudios (diplomados, maestrías, doctorados)
+    // Procesar estudios (diplomados, maestrías, doctorados)
     const estudios = [];
 
     const parseEstudios = (tipo, bodyField) => {
@@ -101,7 +101,7 @@ const crearDocente = async (req, res) => {
   }
 };
 
-// ✅ Obtener docente por usuario_id (para saber si ya llenó el formulario)
+// Obtener docente por usuario_id (para saber si ya llenó el formulario)
 const obtenerDocentePorUsuarioId = async (req, res) => {
   const { usuarioId } = req.params;
   try {
@@ -117,7 +117,7 @@ const obtenerDocentePorUsuarioId = async (req, res) => {
   }
 };
 
-// ✅ Obtener docente por ID con estudios (admin)
+// Obtener docente por ID con estudios (admin)
 const getDocentePorId = async (req, res) => {
   const { id } = req.params;
 
@@ -151,7 +151,7 @@ const getDocentePorId = async (req, res) => {
   }
 };
 
-// ✅ Obtener todos los docentes
+// Obtener todos los docentes
 const getTodosLosDocentes = async (req, res) => {
   try {
     const result = await pool.query('SELECT * FROM docentes ORDER BY id ASC');
@@ -162,7 +162,7 @@ const getTodosLosDocentes = async (req, res) => {
   }
 };
 
-// ✅ Actualizar datos del docente
+// Actualizar datos del docente
 const actualizarDocente = async (req, res) => {
   const client = await pool.connect();
   const docenteId = req.params.id;
@@ -182,7 +182,7 @@ const actualizarDocente = async (req, res) => {
 
     const fotografia = req.files?.['fotografia']?.[0]?.filename || req.body.fotografia_actual || null;
 
-    // 📝 Actualizar datos del docente
+    // Actualizar datos del docente
     await client.query(
       `UPDATE docentes SET
         nombres = $1, apellidos = $2, correo_electronico = $3,
@@ -201,7 +201,7 @@ const actualizarDocente = async (req, res) => {
       ]
     );
 
-    // 🎯 Actualizar asignaturas (limpiar y volver a insertar)
+    // Actualizar asignaturas (limpiar y volver a insertar)
     const asignaturaIds = JSON.parse(asignaturas || '[]');
     await client.query(`DELETE FROM docente_asignatura WHERE docente_id = $1`, [docenteId]);
 
@@ -224,7 +224,7 @@ const actualizarDocente = async (req, res) => {
 
 
 
-    // 🧠 Actualizar estudios (nuevos, modificados y eliminados)
+    // Actualizar estudios (nuevos, modificados y eliminados)
     const estudios = [];
 
     const parseEstudios = (tipo, bodyField) => {
@@ -265,7 +265,7 @@ const actualizarDocente = async (req, res) => {
       }
     }
 
-    // 🗑 Eliminar estudios marcados para borrar
+    // Eliminar estudios marcados para borrar
     ['diplomados', 'maestrias', 'phds'].forEach(async (tipo) => {
       const raw = req.body[`estudios_eliminar[${tipo}]`];
       if (raw) {
@@ -296,7 +296,7 @@ const actualizarDocente = async (req, res) => {
 };
 
 
-// ✅ Obtener estudios por docente_id
+// Obtener estudios por docente_id
 const obtenerEstudiosPorDocente = async (req, res) => {
   const { docente_id } = req.params;
 
@@ -316,7 +316,7 @@ const obtenerEstudiosPorDocente = async (req, res) => {
   }
 };
 
-// ✅ Exportación de todos los controladores
+// Exportación de todos los controladores
 module.exports = {
   crearDocente,
   obtenerDocentePorUsuarioId,

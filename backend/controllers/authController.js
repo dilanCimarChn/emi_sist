@@ -110,8 +110,8 @@ exports.solicitarRegistro = async (req, res) => {
 
     // Guardar la solicitud
     const result = await pool.query(
-      'INSERT INTO solicitudes_registro (nombre, apellidos, correo, contrasena, celular, ci) VALUES ($1, $2, $3, $4, $5, $6) RETURNING id',
-      [nombre, apellidos, correo, contrasena, celular, ci]
+      'INSERT INTO solicitudes_registro (nombre, apellidos, correo, contrasena, celular, ci, estado,fecha_solicitud)VALUES ($1, $2, $3, $4, $5, $6, $7, CURRENT_TIMESTAMP) RETURNING id',
+      [nombre, apellidos, correo, contrasena, celular, ci,'pendiente']
     );
 
     // ========== NUEVA FUNCIONALIDAD DE CORREO ==========

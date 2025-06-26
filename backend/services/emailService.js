@@ -80,7 +80,7 @@ const enviarConfirmacionAprobacion = async (docenteData) => {
             html: `
         <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; border: 1px solid #ddd; border-radius: 8px;">
           <div style="background-color: #28a745; color: white; padding: 20px; text-align: center; border-radius: 8px 8px 0 0;">
-            <h2>🎉 ¡Solicitud Aprobada!</h2>
+            <h2> ¡Solicitud Aprobada!</h2>
           </div>
           
           <div style="padding: 20px; background-color: #f8f9fa;">

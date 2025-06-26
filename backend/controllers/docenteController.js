@@ -17,7 +17,16 @@ const crearDocente = async (req, res) => {
       modalidad_ingreso, asignaturas
     } = req.body;
 
-    if (!usuario_id) throw new Error('usuario_id es obligatorio');
+    // ✅ VALIDACIÓN MEJORADA
+    if (!usuario_id || usuario_id === 'undefined' || usuario_id === 'NaN' || isNaN(usuario_id)) {
+      throw new Error('usuario_id es obligatorio y debe ser un número válido');
+    }
+
+    // Convertir a número entero
+    const usuarioIdNum = parseInt(usuario_id);
+    if (isNaN(usuarioIdNum)) {
+      throw new Error('usuario_id debe ser un número válido');
+    }
 
     const fotografia = req.files?.['fotografia']?.[0]?.filename || null;
 
@@ -34,7 +43,7 @@ const crearDocente = async (req, res) => {
         $11, $12, $13, $14, $15
       ) RETURNING id`,
       [
-        usuario_id, nombres, apellidos, correo_electronico, ci,
+        usuarioIdNum, nombres, apellidos, correo_electronico, ci,
         genero, grado_academico, titulo, anio_titulacion, universidad,
         experiencia_laboral, experiencia_docente, categoria_docente,
         modalidad_ingreso, fotografia
@@ -101,19 +110,62 @@ const crearDocente = async (req, res) => {
   }
 };
 
-// Obtener docente por usuario_id (para saber si ya llenó el formulario)
+
+// ✅ Obtener docente por usuario_id (para saber si ya llenó el formulario)
 const obtenerDocentePorUsuarioId = async (req, res) => {
-  const { usuarioId } = req.params;
+  const { usuarioId } = req.params; // <-- Esto obtiene el valor de la URL
+  
   try {
-    const result = await pool.query('SELECT * FROM docentes WHERE usuario_id = $1', [usuarioId]);
+    // ✅ VALIDACIÓN MEJORADA CON MANEJO DE CASOS EDGE
+    console.log(`🔍 Recibido usuarioId: "${usuarioId}" (tipo: ${typeof usuarioId})`);
+    
+    // Verificar si usuarioId está vacío o es una cadena inválida
+    if (!usuarioId || 
+        usuarioId === 'undefined' || 
+        usuarioId === 'null' || 
+        usuarioId === 'NaN' ||
+        usuarioId.trim() === '') {
+      console.log('❌ usuarioId inválido:', usuarioId);
+      return res.status(400).json({ 
+        error: 'ID de usuario requerido',
+        message: 'El parámetro usuarioId no puede estar vacío o ser inválido.',
+        received: usuarioId
+      });
+    }
+
+    // ✅ PARSEO SEGURO
+    const usuarioIdNum = parseInt(usuarioId, 10); // <-- CLAVE: Intenta convertir la cadena a un número
+    
+    if (isNaN(usuarioIdNum) || usuarioIdNum <= 0) { // <-- CLAVE: Valida si la conversión falló
+      console.log('❌ usuarioId no es un número válido:', usuarioId);
+      return res.status(400).json({ 
+        error: 'ID de usuario inválido',
+        message: 'El usuarioId debe ser un número entero positivo',
+        received: usuarioId
+      });
+    }
+
+    console.log(`🔍 Buscando docente con usuario_id: ${usuarioIdNum}`);
+    
+    // ✅ La consulta se hace con un NÚMERO seguro
+    const result = await pool.query('SELECT * FROM docentes WHERE usuario_id = $1', [usuarioIdNum]);
+    
     if (result.rows.length > 0) {
+      console.log('✅ Docente encontrado');
       res.status(200).json({ docente: result.rows[0] });
     } else {
-      res.status(404).json({ message: 'No se encontró docente con ese usuario_id' });
+      console.log('❌ No se encontró docente');
+      res.status(404).json({ 
+        message: 'No se encontró docente con ese usuario_id',
+        usuario_id: usuarioIdNum
+      });
     }
   } catch (error) {
     console.error('❌ Error al obtener docente:', error);
-    res.status(500).json({ error: 'Error al buscar docente por usuario_id' });
+    res.status(500).json({ 
+      error: 'Error al buscar docente por usuario_id', 
+      detalle: error.message 
+    });
   }
 };
 
@@ -122,7 +174,13 @@ const getDocentePorId = async (req, res) => {
   const { id } = req.params;
 
   try {
-    const docenteResult = await pool.query('SELECT * FROM docentes WHERE id = $1', [id]);
+    // ✅ VALIDACIÓN MEJORADA
+    const docenteIdNum = parseInt(id);
+    if (isNaN(docenteIdNum)) {
+      return res.status(400).json({ error: 'ID de docente inválido' });
+    }
+
+    const docenteResult = await pool.query('SELECT * FROM docentes WHERE id = $1', [docenteIdNum]);
     if (docenteResult.rows.length === 0) {
       return res.status(404).json({ error: 'Docente no encontrado' });
     }
@@ -131,7 +189,7 @@ const getDocentePorId = async (req, res) => {
 
     const estudiosResult = await pool.query(
       'SELECT * FROM estudios WHERE docente_id = $1 ORDER BY anio DESC',
-      [id]
+      [docenteIdNum]
     );
     docente.estudios = estudiosResult.rows;
 
@@ -140,7 +198,7 @@ const getDocentePorId = async (req, res) => {
        FROM asignaturas a
        JOIN docente_asignatura da ON a.id = da.asignatura_id
        WHERE da.docente_id = $1`,
-      [id]
+      [docenteIdNum]
     );
     docente.asignaturas = asignaturasResult.rows;
 
@@ -168,6 +226,12 @@ const actualizarDocente = async (req, res) => {
   const docenteId = req.params.id;
 
   try {
+    // ✅ VALIDACIÓN MEJORADA
+    const docenteIdNum = parseInt(docenteId);
+    if (isNaN(docenteIdNum)) {
+      return res.status(400).json({ error: 'ID de docente inválido' });
+    }
+
     console.log('✅ BODY:', req.body);
     console.log('📂 FILES:', req.files);
 
@@ -197,23 +261,24 @@ const actualizarDocente = async (req, res) => {
         grado_academico, titulo, anio_titulacion, universidad,
         experiencia_laboral, experiencia_docente,
         categoria_docente, modalidad_ingreso,
-        fotografia, docenteId
+        fotografia, docenteIdNum
       ]
     );
 
     // Actualizar asignaturas (limpiar y volver a insertar)
     const asignaturaIds = JSON.parse(asignaturas || '[]');
-    await client.query(`DELETE FROM docente_asignatura WHERE docente_id = $1`, [docenteId]);
+    await client.query(`DELETE FROM docente_asignatura WHERE docente_id = $1`, [docenteIdNum]);
 
     if (Array.isArray(asignaturaIds) && asignaturaIds.length > 0) {
       for (const asignaturaId of asignaturaIds) {
         await client.query(
           `INSERT INTO docente_asignatura (docente_id, asignatura_id)
            VALUES ($1, $2)`,
-          [docenteId, asignaturaId]
+          [docenteIdNum, asignaturaId]
         );
       }
     }
+
     // Crear un mapa de archivos para acceder fácilmente
     const fileMap = {};
     if (req.files && Array.isArray(req.files)) {
@@ -221,8 +286,6 @@ const actualizarDocente = async (req, res) => {
         fileMap[file.fieldname] = file;
       });
     }
-
-
 
     // Actualizar estudios (nuevos, modificados y eliminados)
     const estudios = [];
@@ -253,14 +316,14 @@ const actualizarDocente = async (req, res) => {
         await client.query(
           `INSERT INTO estudios (docente_id, tipo, universidad, anio, certificado)
            VALUES ($1, $2, $3, $4, $5)`,
-          [docenteId, est.tipo, est.universidad, est.anio, est.certificado]
+          [docenteIdNum, est.tipo, est.universidad, est.anio, est.certificado]
         );
       } else {
         await client.query(
           `UPDATE estudios SET
             tipo = $1, universidad = $2, anio = $3, certificado = $4
            WHERE id = $5 AND docente_id = $6`,
-          [est.tipo, est.universidad, est.anio, est.certificado, est.id, docenteId]
+          [est.tipo, est.universidad, est.anio, est.certificado, est.id, docenteIdNum]
         );
       }
     }
@@ -272,7 +335,7 @@ const actualizarDocente = async (req, res) => {
         const ids = JSON.parse(raw);
         if (Array.isArray(ids)) {
           for (const id of ids) {
-            await client.query(`DELETE FROM estudios WHERE id = $1 AND docente_id = $2`, [id, docenteId]);
+            await client.query(`DELETE FROM estudios WHERE id = $1 AND docente_id = $2`, [id, docenteIdNum]);
           }
         }
       }
@@ -281,7 +344,7 @@ const actualizarDocente = async (req, res) => {
     await client.query('COMMIT');
 
     // Respuesta final
-    res.status(200).json({ message: '✅ Perfil actualizado correctamente', docente: { id: docenteId } });
+    res.status(200).json({ message: '✅ Perfil actualizado correctamente', docente: { id: docenteIdNum } });
 
   } catch (error) {
     await client.query('ROLLBACK');
@@ -295,19 +358,24 @@ const actualizarDocente = async (req, res) => {
   }
 };
 
-
 // Obtener estudios por docente_id
 const obtenerEstudiosPorDocente = async (req, res) => {
   const { docente_id } = req.params;
 
   try {
+    // ✅ VALIDACIÓN MEJORADA
+    const docenteIdNum = parseInt(docente_id);
+    if (isNaN(docenteIdNum)) {
+      return res.status(400).json({ error: 'ID de docente inválido' });
+    }
+
     const query = `
       SELECT id, tipo, universidad, anio, certificado
       FROM estudios
       WHERE docente_id = $1
       ORDER BY anio DESC
     `;
-    const result = await pool.query(query, [docente_id]);
+    const result = await pool.query(query, [docenteIdNum]);
 
     res.status(200).json(result.rows);
   } catch (error) {
